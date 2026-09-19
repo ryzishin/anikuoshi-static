@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi v1.0 — a clean, fast way to watch anime. Search, discover, and stream.">
-<meta name="version" content="1.0.0">
+<meta name="description" content="AniKuoshi v1.0.1 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.1">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi v1.0 design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0.1 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -126,7 +126,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .badge--here{background:var(--acc);color:#20180a;box-shadow:0 2px 8px rgba(245,165,36,.4)}
 
 /* ---------- home ---------- */
-.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:9dvh 18px 20px;gap:26px}
+.hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:9dvh 18px 20px;gap:26px;position:relative;z-index:80}
 .hero-brand{display:flex;flex-direction:column;align-items:center;gap:14px}
 .hero-mark{width:64px;height:64px;border-radius:18px;background:linear-gradient(160deg,#241c13,#151007);border:1px solid var(--line2);
   display:flex;align-items:center;justify-content:center;color:var(--acc);box-shadow:var(--shadow);animation:floatMark 3.5s var(--ease) infinite}
@@ -135,7 +135,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .hero h1{margin:0;font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1.1}
 .hero h1 b{color:var(--acc);font-weight:800}
 .hero p{margin:0;color:var(--faint);font-size:14px;letter-spacing:.02em}
-.searchwrap{width:100%;max-width:560px;position:relative}
+.searchwrap{width:100%;max-width:560px;position:relative;z-index:80}
 .searchbar{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--line2);border-radius:16px;
   padding:5px 6px 5px 16px;transition:border-color .18s var(--ease),box-shadow .18s var(--ease)}
 .searchbar:focus-within{border-color:rgba(245,165,36,.6);box-shadow:0 0 0 3px rgba(245,165,36,.12)}
@@ -145,10 +145,12 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .searchbar .icbtn{width:42px;height:42px;border-radius:12px}
 .sugg{position:absolute;left:0;right:0;top:calc(100% + 8px);background:var(--bg2);border:1px solid var(--line2);border-radius:16px;
   box-shadow:var(--shadow);overflow-y:auto;overflow-x:hidden;
-  max-height:min(60dvh, 420px);
+  /* The JS sets --sugg-avail on open so the overlay never spills past the
+     viewport bottom — it shrinks to whatever vertical room is left.         */
+  max-height:var(--sugg-avail, min(72dvh, 460px));
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
-  z-index:60;display:none;animation:suggPop .2s var(--ease-out)}
+  z-index:100;display:none;animation:suggPop .2s var(--ease-out)}
 @keyframes suggPop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .sugg.open{display:block}
 .sugg-item{display:flex;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s var(--ease)}
@@ -161,6 +163,17 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .sugg-meta{font-size:12px;color:var(--faint);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sugg-empty{padding:20px 16px;color:var(--faint);font-size:13.5px;text-align:center}
 .sugg-note{padding:8px 16px 12px;color:var(--faint);font-size:11.5px;letter-spacing:.03em;text-align:center}
+/* hide keyboard hint on touch devices (no arrow keys / Esc there) and on
+   small screens (overlay real estate is too precious to waste on the hint) */
+@media(hover:none){.sugg-note{display:none}}
+@media(max-width:520px){.sugg-note{display:none}}
+@media(max-width:520px){
+  .sugg{border-radius:14px}
+  .sugg-item{padding:11px 12px;gap:11px}
+  .sugg-thumb,.sugg-thumb-fallback{width:36px;height:50px;border-radius:7px}
+  .sugg-title{font-size:13.5px}
+  .sugg-meta{font-size:11.5px}
+}
 .kbd{display:inline-block;padding:1px 6px;border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
 </style>
 <style>
@@ -653,7 +666,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   <div class="modal-card">
     <div class="modal-hd">
       <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
-      <span class="ver-tag">v1.0.0</span>
+      <span class="ver-tag">v1.0.1</span>
       <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-bd" id="clBody"></div>
@@ -663,10 +676,10 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi v1.0 — core ================= */
+/* ================= AniKuoshi v1.0.1 — core ================= */
 'use strict';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 const API_BASE = 'https://apikuoshi-v2.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -753,19 +766,31 @@ function statusKind(status) {
 }
 
 /* ---------- routing key helpers (slug-first, NOT encoded) ---------- */
-/* For ROUTES (path segments) we prefer slugs and never URI-encode the segment.
-   Slugs are kebab-case ASCII so no encoding is needed; anilist:<id> keeps its
-   colon because ':' is a valid sub-delim allowed in URL path segments.      */
+/* For ROUTES we prefer the canonical KEY (anilist:<id> / mal:<id>) — this is
+   what suggestions/search cards already carry and what /api/anime resolves
+   most reliably. Listing slugs returned by /api/search and /api/suggestions
+   can be STALE or mismatched to a different anime (verified bug: the slug
+   "hello-world-isbqw" returned for HELLO WORLD actually resolves to
+   "Wo Zai Feitu Shijie Sao Laji" via /api/anime — different anilist id).
+
+   Routes are NOT URI-encoded: the colon in `anilist:154587` is a valid URL
+   sub-delim and is allowed in hash path segments. The router's parse()
+   uses decodeURIComponent, which is a no-op for non-encoded strings.        */
 function routeKey(entry) {
   if (!entry) return '';
-  // Prefer slug (always resolvable upstream), fall back to key
-  return entry.slug || entry.identities && entry.identities.preferred || entry.key || '';
+  // Prefer canonical key (anilist:<id> / mal:<id>) for cards from search/suggestions.
+  // Fall back to identities.preferred (slug-first canonical key from details),
+  // then listing slug, then key-as-a-string.
+  const k = entry.key;
+  if (k && /^anilist:|^mal:/.test(k)) return k;
+  if (entry.identities && entry.identities.preferred) return entry.identities.preferred;
+  return k || entry.slug || '';
 }
 function routeFor(entry) {
-  return '#/anime/' + routeKey(entry);
+  return '/anime/' + routeKey(entry);
 }
 function watchRouteFor(entry, ep) {
-  return '#/watch/' + routeKey(entry) + '/' + (ep || 1);
+  return '/watch/' + routeKey(entry) + '/' + (ep || 1);
 }
 
 /* ---------- timeout fetch ---------- */
@@ -867,7 +892,14 @@ const watchOrderUrl = slugOrKey => `/api/watch-order/${enc(slugOrKey)}`;
 /* ---------- franchise graph helpers ----------
    The /api/seasons and /api/watch-order endpoints are ASYMMETRIC: querying on
    a sequel returns no franchise data. We must follow PREQUEL relations up to
-   the franchise root, then call /api/watch-order/<rootKey> for the full graph. */
+   the franchise root, then call /api/watch-order/<rootKey> for the full graph.
+
+   ⚠️ CRITICAL: Always use the KEY (anilist:<id> / mal:<id>) when calling
+   /api/seasons and /api/watch-order, NEVER the slug. Listing slugs returned
+   by /api/anime can be stale and resolve to a different anime (verified bug:
+   HELLO WORLD anilist:106240 returns slug "hello-world" which actually
+   resolves to "Wo Zai Feitu Shijie Sao Laji" anilist:206275 via the seasons
+   endpoint). The KEY is canonical and always correct.                                  */
 const Franchise = {
   _rootCache: new Map(),
   async resolveRoot(anime) {
@@ -895,9 +927,10 @@ const Franchise = {
   },
   async watchOrder(anime) {
     const root = await this.resolveRoot(anime);
-    if (!root) return [];
+    if (!root || !root.key) return [];
     try {
-      const woData = await API.get(watchOrderUrl(root.slug || root.key), 30 * 60000);
+      /* Always use root.key — slugs can be stale on the API side */
+      const woData = await API.get(watchOrderUrl(root.key), 30 * 60000);
       const rows = woData.watchOrder || woData.related || [];
       return rows.slice().sort((a, b) => {
         const ra = Number(a.releaseOrder || a.order || 9999);
@@ -909,15 +942,13 @@ const Franchise = {
   },
   async fullFranchise(anime) {
     const root = await this.resolveRoot(anime);
-    if (!root) return { seasons: [], specials: [], watchOrder: [] };
-    /* Call both endpoints in parallel:
-       - /api/seasons/:slug    → groups{} (bucketed relations)
-       - /api/watch-order/:slug → watchOrder[] (release-sorted franchise timeline)
-       The /api/seasons endpoint does NOT include watchOrder data, so we always
-       call /api/watch-order separately.                                           */
+    if (!root || !root.key) return { seasons: [], specials: [], watchOrder: [] };
+    /* Call both endpoints in parallel using root.KEY (never the slug):
+       - /api/seasons/:key       → groups{} (bucketed relations)
+       - /api/watch-order/:key   → watchOrder[] (release-sorted franchise timeline) */
     const [sdResult, woResult] = await Promise.allSettled([
-      API.get(seasonsUrl(root.slug || root.key), 30 * 60000),
-      API.get(watchOrderUrl(root.slug || root.key), 30 * 60000)
+      API.get(seasonsUrl(root.key), 30 * 60000),
+      API.get(watchOrderUrl(root.key), 30 * 60000)
     ]);
     if (sdResult.status === 'rejected' && woResult.status === 'rejected') {
       return { groups: {}, watchOrder: [], root, source: 'none' };
@@ -1047,7 +1078,7 @@ function animeCard(entry, opts) {
     h('div', { class: 'hcard-meta', text: metaLine(entry) })
   );
   /* ROUTES use the slug (no encoding); API calls (in prefetchDetails) still encode */
-  const goCard = () => { location.hash = routeFor(entry); };
+  const goCard = () => go(routeFor(entry));
   card.addEventListener('click', goCard);
   card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goCard(); } });
   card.addEventListener('pointerenter', () => prefetchDetails(key));
@@ -1060,11 +1091,15 @@ function emptyState(iconName, title, body, actions) {
 
 /* ---------- router ----------
    Routes are SLUG-based and never URI-encoded. Routes look like:
-     #/anime/frieren-beyond-journey-s-end-c6fbj
-     #/anime/sousou-no-frieren
-     #/anime/anilist:154587       (colon is a valid URL sub-delim)
-     #/watch/frieren-beyond-journey-s-end-c6fbj/3
-   Query params ARE still encoded via URLSearchParams.                            */
+     /anime/frieren-beyond-journey-s-end-c6fbj
+     /anime/sousou-no-frieren
+     /anime/anilist:154587       (colon is a valid URL sub-delim)
+     /watch/frieren-beyond-journey-s-end-c6fbj/3
+   Query params ARE still encoded via URLSearchParams.
+
+   Uses the History API (pushState / replaceState / popstate) for clean URLs
+   without the # prefix. Requires a server-side SPA rewrite on static hosts
+   (see vercel.json alongside this file).                                     */
 const Router = {
   seq: 0,
   scrollMem: new Map(),
@@ -1073,14 +1108,15 @@ const Router = {
   navStack: [],
   navIndex: -1,
   /* When the watch view does an in-place episode switch (no re-render) it
-     replaces the hash silently and sets this flag so hashchange ignores it. */
+     replaces the URL silently via history.replaceState and sets this flag so
+     popstate ignores the synthetic state we just pushed. */
   silent: false,
+  currentPath() {
+    return location.pathname + location.search;
+  },
   parse() {
-    let hs = location.hash || '#/';
-    hs = hs.slice(1);
-    const qi = hs.indexOf('?');
-    const path = qi >= 0 ? hs.slice(0, qi) : hs;
-    const query = new URLSearchParams(qi >= 0 ? hs.slice(qi + 1) : '');
+    const path = location.pathname;
+    const query = new URLSearchParams(location.search);
     const seg = path.split('/').filter(Boolean).map(x => { try { return decodeURIComponent(x); } catch (e) { return x; } });
     return { seg, query, path };
   },
@@ -1088,14 +1124,20 @@ const Router = {
     const my = ++this.seq;
     if (this.cleanup) { try { this.cleanup(); } catch (e) { } this.cleanup = null; }
     const { seg, query } = this.parse();
-    const oldHash = this.current;
-    if (oldHash != null) this.scrollMem.set(oldHash, window.scrollY);
-    this.current = location.hash || '#/';
+    const oldPath = this.current;
+    if (oldPath != null) this.scrollMem.set(oldPath, window.scrollY);
+    this.current = this.currentPath();
     const view = $('#view');
     window.scrollTo(0, 0);
     const savedY = this.scrollMem.get(this.current);
     try {
       if (seg.length === 0) await Views.home(view, my);
+      else if (seg[0] === 'index.html' || seg[0] === 'anikuoshii.html') {
+        /* direct hit on the HTML file name — replace URL to '/' and render home */
+        history.replaceState(null, '', '/');
+        this.current = '/';
+        await Views.home(view, my);
+      }
       else if (seg[0] === 'search') await Views.search(view, my, query.get('q') || '', Math.max(1, parseInt(query.get('p') || '1', 10) || 1));
       else if (seg[0] === 'anime' && seg[1]) await Views.details(view, my, seg[1]);
       else if (seg[0] === 'watch' && seg[1]) await Views.watch(view, my, seg[1], seg[2] || '1');
@@ -1111,19 +1153,19 @@ const Router = {
     /* Trigger AOS refresh after view swap */
     requestAnimationFrame(() => { if (window.AOS) AOS.refresh(); });
   },
-  /* In-place hash update: replace the URL silently without triggering render */
-  replaceHashSilent(newHash) {
-    if (location.hash === newHash) return;
+  /* In-place URL update: replace the URL silently without triggering render */
+  replacePathSilent(newPath) {
+    if (this.currentPath() === newPath) return;
     this.silent = true;
     const prev = this.current;
-    try { history.replaceState(null, '', newHash); }
-    catch (e) { location.hash = newHash; this.silent = false; return; }
-    this.current = newHash;
+    try { history.replaceState(null, '', newPath); }
+    catch (e) { this.silent = false; return; }
+    this.current = newPath;
     /* keep navStack coherent */
     if (this.navIndex >= 0 && this.navStack[this.navIndex] === prev) {
-      this.navStack[this.navIndex] = newHash;
+      this.navStack[this.navIndex] = newPath;
     }
-    /* hashchange may still fire on some browsers; the silent flag handles it */
+    /* popstate may still fire on some browsers; the silent flag handles it */
     setTimeout(() => { this.silent = false; }, 30);
   },
   back() {
@@ -1131,21 +1173,22 @@ const Router = {
       this.navIndex--;
       const target = this.navStack[this.navIndex];
       this.current = target;
-      location.hash = target;
+      history.pushState(null, '', target);
+      this.render();
     } else {
-      go('#/');
+      go('/');
     }
   },
   start() {
-    const initial = location.hash || '#/';
+    const initial = this.currentPath();
     this.navStack = [initial];
     this.navIndex = 0;
-    addEventListener('hashchange', () => {
+    addEventListener('popstate', () => {
       if (this.silent) return;
-      const hash = location.hash || '#/';
-      if (this.navStack[this.navIndex] !== hash) {
+      const path = this.currentPath();
+      if (this.navStack[this.navIndex] !== path) {
         this.navStack = this.navStack.slice(0, this.navIndex + 1);
-        this.navStack.push(hash);
+        this.navStack.push(path);
         this.navIndex = this.navStack.length - 1;
       }
       this.render();
@@ -1153,14 +1196,16 @@ const Router = {
     this.render();
   }
 };
-function go(hash) {
-  if (location.hash === hash) {
+function go(path) {
+  if (location.pathname + location.search === path) {
     Router.render();
   } else {
     Router.navStack = Router.navStack.slice(0, Router.navIndex + 1);
-    Router.navStack.push(hash);
+    Router.navStack.push(path);
     Router.navIndex = Router.navStack.length - 1;
-    location.hash = hash;
+    history.pushState(null, '', path);
+    /* pushState does NOT fire popstate — render manually */
+    Router.render();
   }
 }
 
@@ -1169,13 +1214,13 @@ const Header = {
   el: $('#hdIn'),
   brand() {
     this.el.replaceChildren(
-      h('a', { class: 'brand', onclick: () => go('#/'), 'aria-label': 'AniKuoshi home' },
+      h('a', { class: 'brand', onclick: () => go('/'), 'aria-label': 'AniKuoshi home' },
         h('span', { class: 'brand-mark' }, ic('play', 16)),
         h('span', { class: 'brand-name', html: 'Ani<b>Kuoshi</b>' })
       ),
       h('span', { class: 'hd-sp' }),
       h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
-      h('button', { class: 'hd-btn', 'aria-label': 'Library', onclick: () => go('#/library') }, ic('lib'))
+      h('button', { class: 'hd-btn', 'aria-label': 'Library', onclick: () => go('/library') }, ic('lib'))
     );
     document.title = 'AniKuoshi';
   },
@@ -1193,7 +1238,7 @@ const Header = {
         toast(on ? 'Added to favorites' : 'Removed from favorites');
         if (opts.onStar) opts.onStar(on);
       } }, ic('star')) : null,
-      opts.search ? h('button', { class: 'hd-btn', 'aria-label': 'Search', onclick: () => go('#/') }, ic('search')) : null
+      opts.search ? h('button', { class: 'hd-btn', 'aria-label': 'Search', onclick: () => go('/') }, ic('search')) : null
     ].filter(Boolean));
     document.title = (title ? title + ' \u00b7 ' : '') + 'AniKuoshi';
   }
@@ -1208,6 +1253,16 @@ const Changelog = {
     this.body = $('#clBody');
     this.body.replaceChildren(
       h('div', { class: 'cl-section' },
+        h('h3', null, ic('spark', 14), 'AniKuoshi v1.0.1', h('span', { class: 'n', text: 'Bugfix release' })),
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'Tightening pass — fixes routing glitches, wrong-franchise bleed-through, and the suggestions overlay clipping into Continue-watching / Favorites cards.' }),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Franchise graph now keyed on canonical ID.'), ' /api/seasons and /api/watch-order are called with the ', h('code', null, 'anilist:<id>'), ' key (never the listing slug). Fixes the Hello World bug where Seasons / Watch order were showing ', h('i', null, 'Wo Zai Feitu Shijie Sao Laji'), ' because the API\'s slug', h('code', null, ' hello-world'), ' actually resolves to a different anime.')),
+          h('li', null, h('span', null, h('b', null, 'Search / suggestion cards use the key.'), ' Clicking a result now routes to ', h('code', null, '/anime/anilist:106240'), ' instead of the buggy listing slug. Original behavior restored.')),
+          h('li', null, h('span', null, h('b', null, 'Suggestions overlay no longer overlaps shelves.'), ' Overlay height is computed per-open against the live viewport; it caps below the searchbar with 8px breathing room and recomputes on resize. The keyboard hint is hidden on touch devices / small screens so it stops eating vertical space where it matters most.')),
+          h('li', null, h('span', null, h('b', null, 'History-API routing.'), ' No more ', h('code', null, '#'), ' in URLs. Clean paths like ', h('code', null, '/anime/anilist:106240'), ' and ', h('code', null, '/watch/anilist:9253/2'), '. Direct URL access and refresh work via ', h('code', null, 'vercel.json'), ' SPA rewrite.'))
+        )
+      ),
+      h('div', { class: 'cl-section' },
         h('h3', null, ic('spark', 14), 'AniKuoshi v1.0', h('span', { class: 'n', text: 'Initial public release' })),
         h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'A clean, fast way to search, discover, and stream anime. Built on APIKuoshi, mobile-first, no AI slop.' }),
         h('ul', { class: 'cl-list' },
@@ -1216,7 +1271,6 @@ const Changelog = {
           h('li', null, h('span', null, h('b', null, 'Removed redundant Related row'), ' on the watch page — Seasons & Specials cover it.')),
           h('li', null, h('span', null, h('b', null, 'Player: no more janky controls after buffering.'), ' Loading overlay hides cleanly; controls stay hidden until you move the mouse (PC) or tap the video (mobile).')),
           h('li', null, h('span', null, h('b', null, 'Episode switching never breaks fullscreen.'), ' Next / Prev / Auto-next / episode-card clicks all reload the stream in place — the fullscreen element stays mounted. URL updates silently via ', h('code', null, 'history.replaceState'), '.')),
-          h('li', null, h('span', null, h('b', null, 'Slug-based routing.'), ' Routes look like ', h('code', null, '#/anime/frieren-beyond-journey-s-end-c6fbj'), ' — no URL-encoded colons or hashes in the path. API query params are still properly encoded.')),
           h('li', null, h('span', null, h('b', null, 'Smooth animations & AOS.'), ' Subtle entrance animations on cards/sections, smoother control transitions, hover lift on posters, modal pop with spring easing.')),
           h('li', null, h('span', null, h('b', null, 'Mobile-first polish.'), ' Tighter tap targets, swipeable shelves, safe-area-aware fullscreen controls, landscape phone player fix, dynamic seekbar height.')),
           h('li', null, h('span', null, h('b', null, 'Design language: "not so AI."'), ' Espresso-black + amber palette, hand-tuned radii, real shadows, custom keyframe loaders, no purple gradients, no glassmorphism overload.'))
@@ -1243,7 +1297,7 @@ const Changelog = {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0 — views: home / search / library ================= */
+/* ================= AniKuoshi v1.0.1 — views: home / search / library ================= */
 'use strict';
 
 /* ---------- live suggestions ---------- */
@@ -1275,7 +1329,16 @@ const Suggest = {
     let timer = 0;
     let lastQ = '';
     const close = () => { dropdown.classList.remove('open'); active = -1; };
-    const open = () => dropdown.classList.add('open');
+    const open = () => {
+      /* Compute available vertical space and cap the overlay height so it
+         never spills past the viewport. We use a CSS var instead of a fixed
+         max-height so the same rule works on tall desktops and short phones. */
+      const r = dropdown.parentElement.getBoundingClientRect();
+      const top = r.bottom + 8; /* overlay's top will be parent bottom + 8px gap */
+      const avail = Math.max(160, window.innerHeight - top - 8);
+      dropdown.style.setProperty('--sugg-avail', Math.min(avail, 460) + 'px');
+      dropdown.classList.add('open');
+    };
 
     const render = () => {
       if (!items.length) {
@@ -1353,12 +1416,14 @@ const Suggest = {
       else if (e.key === 'Enter') {
         const q = (input.value || '').trim();
         if (active >= 0 && items[active]) { e.preventDefault(); pick(items[active]); }
-        else if (q.length >= 2) { e.preventDefault(); close(); opts.onSubmit ? opts.onSubmit(q) : go('#/search?q=' + enc(q)); }
+        else if (q.length >= 2) { e.preventDefault(); close(); opts.onSubmit ? opts.onSubmit(q) : go('/search?q=' + enc(q)); }
       }
       else if (e.key === 'Escape') { close(); }
     });
 
     input.addEventListener('focus', () => { if (items.length) open(); });
+    /* Recompute overlay height on viewport resize (e.g. mobile URL bar show/hide, rotation) */
+    window.addEventListener('resize', () => { if (dropdown.classList.contains('open')) open(); });
     document.addEventListener('pointerdown', e => { if (!dropdown.contains(e.target) && e.target !== input) close(); });
     return { close };
   }
@@ -1404,11 +1469,11 @@ const Views = {
     const searchBtn = h('button', { class: 'icbtn', 'aria-label': 'Search' }, ic('search'));
     const bar = h('div', { class: 'searchbar' }, ic('search'), input, clearBtn, searchBtn);
     Suggest.attach(input, sugg, {
-      onSubmit: q => { go('#/search?q=' + enc(q)); input.blur(); }
+      onSubmit: q => { go('/search?q=' + enc(q)); input.blur(); }
     });
     searchBtn.addEventListener('click', () => {
       const q = (input.value || '').trim();
-      if (q.length >= 2) go('#/search?q=' + enc(q));
+      if (q.length >= 2) go('/search?q=' + enc(q));
       else input.focus();
     });
     const hero = h('section', { class: 'hero', 'data-aos': 'fade' },
@@ -1455,15 +1520,18 @@ Views.search = async function (view, my, q, page) {
   const root = h('div', { class: 'wrap' });
   const input = h('input', { type: 'search', value: q, placeholder: 'Search anime', 'aria-label': 'Search anime', autocomplete: 'off', spellcheck: 'false', enterkeyhint: 'search' });
   const sugg = h('div', { class: 'sugg', role: 'listbox' });
-  const bar = h('div', { class: 'searchbar', style: 'margin:16px 0 4px;max-width:560px' }, ic('search'), input);
-  Suggest.attach(input, sugg, { onSubmit: nq => go('#/search?q=' + enc(nq) + '&p=1') });
+  const bar = h('div', { class: 'searchbar', style: 'margin:16px 0 4px' }, ic('search'), input);
+  Suggest.attach(input, sugg, { onSubmit: nq => go('/search?q=' + enc(nq) + '&p=1') });
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       const v = (input.value || '').trim();
-      if (v.length >= 2 && !$('.sugg-item[data-active]', sugg)) go('#/search?q=' + enc(v) + '&p=1');
+      if (v.length >= 2 && !$('.sugg-item[data-active]', sugg)) go('/search?q=' + enc(v) + '&p=1');
     }
   });
-  root.append(bar, sugg);
+  /* Wrap bar+sugg in a .searchwrap so the overlay (absolute) is positioned
+     relative to the bar AND inherits the high z-index (.searchwrap has z-index:80). */
+  const searchWrap = h('div', { class: 'searchwrap' }, bar, sugg);
+  root.append(searchWrap);
   const grid = h('div', { class: 'grid' });
   const gridWrap = h('div', null,
     h('div', { class: 'load-inline' }, h('span', { class: 'dots' }, h('i'), h('i'), h('i')), h('span', { text: 'Searching \u201c' + q + '\u201d' })),
@@ -1494,9 +1562,9 @@ Views.search = async function (view, my, q, page) {
       return c;
     }));
     const pager = h('div', { class: 'pager' },
-      h('button', { class: 'btn btn--line', disabled: page <= 1 || undefined, onclick: () => go('#/search?q=' + enc(q) + '&p=' + (page - 1)) }, ic('back'), 'Prev'),
+      h('button', { class: 'btn btn--line', disabled: page <= 1 || undefined, onclick: () => go('/search?q=' + enc(q) + '&p=' + (page - 1)) }, ic('back'), 'Prev'),
       h('span', { text: 'Page ' + page }),
-      h('button', { class: 'btn btn--line', disabled: !results.length || undefined, onclick: () => go('#/search?q=' + enc(q) + '&p=' + (page + 1)) }, 'Next', ic('chev-r'))
+      h('button', { class: 'btn btn--line', disabled: !results.length || undefined, onclick: () => go('/search?q=' + enc(q) + '&p=' + (page + 1)) }, 'Next', ic('chev-r'))
     );
     gridWrap.append(pager);
   }
@@ -1516,8 +1584,8 @@ Views.library = async function (view, my, tab) {
   const root = h('div', { class: 'wrap' });
   const favTab = h('button', { class: 'tab' + (tab !== 'hist' ? ' on' : '') }, ic('star'), 'Favorites');
   const histTab = h('button', { class: 'tab' + (tab === 'hist' ? ' on' : '') }, ic('history'), 'History');
-  favTab.addEventListener('click', () => go('#/library?tab=fav'));
-  histTab.addEventListener('click', () => go('#/library?tab=hist'));
+  favTab.addEventListener('click', () => go('/library?tab=fav'));
+  histTab.addEventListener('click', () => go('/library?tab=hist'));
   root.append(h('div', { class: 'tabs' }, favTab, histTab));
   const body = h('div');
   root.append(body);
@@ -1527,7 +1595,7 @@ Views.library = async function (view, my, tab) {
     const favs = Store.favs;
     if (!favs.length) {
       body.append(emptyState('star', 'No favorites yet', 'Tap the star on any title to keep it here for quick access.',
-        h('button', { class: 'btn btn--acc', onclick: () => go('#/') }, ic('search'), 'Find something to watch')));
+        h('button', { class: 'btn btn--acc', onclick: () => go('/') }, ic('search'), 'Find something to watch')));
     } else {
       const grid = h('div', { class: 'grid' });
       for (const f of favs) {
@@ -1578,7 +1646,7 @@ Views.library = async function (view, my, tab) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0 — views: details ================= */
+/* ================= AniKuoshi v1.0.1 — views: details ================= */
 'use strict';
 
 const GROUP_LABEL = {
@@ -1931,7 +1999,7 @@ Views.details = async function (view, my, key) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0 — watch view + player ================= */
+/* ================= AniKuoshi v1.0.1 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -2734,7 +2802,7 @@ function syncCenter() {
     },
     /* In-place episode switch: keeps the player DOM alive, preserves fullscreen.
        The view layer is responsible for updating the URL silently via
-       Router.replaceHashSilent() before/after calling this.                        */
+       Router.replacePathSilent() before/after calling this.                        */
     switchEpisode(key, ep, prov, type, resumeAt) {
       P.state.key = key; P.state.ep = ep;
       P.state.prov = prov || null; P.state.type = type || null;
@@ -2804,7 +2872,7 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi v1.0 — watch view ================= */
+/* ================= AniKuoshi v1.0.1 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
@@ -2884,9 +2952,9 @@ Views.watch = async function (view, my, key, epRaw) {
     if (newEp === ep) return;
     const oldEp = ep;
     ep = newEp;
-    /* Update URL silently so hashchange doesn't trigger a full re-render */
-    const newHash = '#/watch/' + routeKey(uiState.anime || { slug: key, key: key }) + '/' + newEp;
-    Router.replaceHashSilent(newHash);
+    /* Update URL silently so popstate doesn't trigger a full re-render */
+    const newPath = '/watch/' + routeKey(uiState.anime || { slug: key, key: key }) + '/' + newEp;
+    Router.replacePathSilent(newPath);
     /* Save current progress before switching */
     try {
       const v = player.video();
