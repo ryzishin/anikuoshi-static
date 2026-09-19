@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="description" content="AniKuoshi v1.0 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.0">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -19,15 +21,21 @@
   --r-s:8px; --r-m:12px; --r-l:16px;
   --hd-h:56px;
   --shadow:0 10px 30px rgba(0,0,0,.45);
+  --shadow-soft:0 6px 18px rgba(0,0,0,.32);
+  --shadow-acc:0 8px 24px rgba(245,165,36,.18);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
 }
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:15px;line-height:1.55;
-  min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  transition:background .25s var(--ease)}
 ::selection{background:rgba(245,165,36,.32)}
 img{display:block;max-width:100%}
-a{color:inherit;text-decoration:none}
+a{color:inherit;text-decoration:none;transition:color .15s var(--ease)}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 input{font:inherit}
 :focus{outline:none}
@@ -35,30 +43,40 @@ input{font:inherit}
 svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:#2c2417;border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#3b3020}
 ::-webkit-scrollbar-track{background:transparent}
 *{scrollbar-width:thin;scrollbar-color:#2c2417 transparent}
 
 /* ---------- shell ---------- */
 .hd{position:sticky;top:0;z-index:50;background:rgba(12,10,7,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--line)}
+  border-bottom:1px solid var(--line);transition:border-color .2s var(--ease),background .2s var(--ease)}
 .hd-in{max-width:1160px;margin:0 auto;height:var(--hd-h);display:flex;align-items:center;gap:6px;padding:0 10px}
 .hd-sp{flex:1;min-width:0}
 .hd-title{font-size:15px;font-weight:650;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.hd-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;color:var(--dim);flex:none}
-.hd-btn:active{background:var(--bg3)}
+.hd-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;color:var(--dim);flex:none;transition:color .15s var(--ease),background .15s var(--ease),transform .12s var(--ease)}
+.hd-btn:hover{color:var(--txt);background:var(--bg3)}
+.hd-btn:active{transform:scale(.92);background:var(--bg4)}
 .hd-btn.star-on{color:var(--acc)}
-.brand{display:flex;align-items:center;gap:9px;padding:6px 4px;user-select:none}
+.brand{display:flex;align-items:center;gap:9px;padding:6px 4px;user-select:none;cursor:pointer}
 .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(160deg,#241c13,#171209);border:1px solid var(--line2);
-  display:flex;align-items:center;justify-content:center;color:var(--acc)}
+  display:flex;align-items:center;justify-content:center;color:var(--acc);transition:transform .25s var(--ease-spring),box-shadow .25s var(--ease)}
+.brand:hover .brand-mark{transform:rotate(-6deg) scale(1.06);box-shadow:var(--shadow-acc)}
 .brand-name{font-weight:750;font-size:17px;letter-spacing:.02em}
 .brand-name b{color:var(--acc);font-weight:750}
+.hd-ver{font-size:10px;font-weight:700;color:var(--acc);background:var(--accsoft);border:1px solid rgba(245,165,36,.35);
+  padding:2px 6px;border-radius:6px;letter-spacing:.05em;cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+.hd-ver:hover{background:rgba(245,165,36,.22);border-color:rgba(245,165,36,.55)}
 .wrap{max-width:1160px;margin:0 auto;padding:0 14px}
 .view{min-height:calc(100dvh - var(--hd-h));outline:none;padding-bottom:env(safe-area-inset-bottom)}
 .foot{padding:34px 0 42px;text-align:center;color:var(--faint);font-size:12px;letter-spacing:.04em}
+.foot a{color:var(--dim);transition:color .15s var(--ease)}
+.foot a:hover{color:var(--acc)}
+.foot-ver{display:inline-flex;align-items:center;gap:8px;margin-top:6px}
+.foot-ver .dot{width:3px;height:3px;border-radius:50%;background:var(--faint)}
 
 /* ---------- loader: wiggling ellipsis ---------- */
 .dots{display:inline-flex;align-items:flex-end;gap:6px;height:22px}
-.dots i{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:dwig 1.15s ease-in-out infinite;transform-origin:center bottom}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:dwig 1.15s var(--ease) infinite;transform-origin:center bottom}
 .dots i:nth-child(2){animation-delay:.13s;background:#d98f1c}
 .dots i:nth-child(3){animation-delay:.26s;background:#b57714}
 @keyframes dwig{0%,60%,100%{transform:translateY(0) scale(1);opacity:.55}30%{transform:translateY(-9px) scale(1.12);opacity:1}}
@@ -79,22 +97,23 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 
 /* ---------- buttons / chips ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 20px;border-radius:13px;
-  font-weight:650;font-size:14.5px;letter-spacing:.01em;user-select:none;transition:transform .06s ease,background .15s ease,border-color .15s}
+  font-weight:650;font-size:14.5px;letter-spacing:.01em;user-select:none;transition:transform .12s var(--ease),background .18s var(--ease),border-color .18s var(--ease),box-shadow .2s var(--ease)}
 .btn:active{transform:scale(.975)}
-.btn--acc{background:var(--acc);color:#20180a}
-.btn--acc:hover{background:var(--acc2)}
+.btn--acc{background:var(--acc);color:#20180a;box-shadow:var(--shadow-acc)}
+.btn--acc:hover{background:var(--acc2);box-shadow:0 10px 28px rgba(245,165,36,.28)}
 .btn--line{border:1px solid var(--line2);background:var(--bg3);color:var(--txt)}
 .btn--line:hover{border-color:#4d3f28;background:var(--bg4)}
 .btn--ghost{color:var(--dim)}
 .btn--ghost:hover{color:var(--txt);background:var(--bg3)}
 .btn--lg{min-height:52px;padding:0 24px;font-size:15.5px;border-radius:15px}
 .btn[disabled]{opacity:.45;pointer-events:none}
-.icbtn{width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center;border-radius:13px;color:var(--dim);flex:none;transition:background .15s,color .15s,transform .06s}
+.icbtn{width:46px;height:46px;display:inline-flex;align-items:center;justify-content:center;border-radius:13px;color:var(--dim);flex:none;transition:color .15s var(--ease),background .15s var(--ease),transform .12s var(--ease)}
 .icbtn:hover{color:var(--txt);background:var(--bg3)}
 .icbtn:active{transform:scale(.94)}
 .icbtn.on{color:var(--acc)}
 .chip{display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 15px;border-radius:999px;border:1px solid var(--line2);
-  background:var(--bg3);color:var(--dim);font-size:13px;font-weight:600;letter-spacing:.02em;white-space:nowrap;transition:all .15s}
+  background:var(--bg3);color:var(--dim);font-size:13px;font-weight:600;letter-spacing:.02em;white-space:nowrap;transition:all .15s var(--ease)}
+.chip:hover{color:var(--txt);border-color:#4d3f28}
 .chip:active{transform:scale(.97)}
 .chip.on{background:var(--accsoft);border-color:rgba(245,165,36,.55);color:var(--acc)}
 .chip--dub.on{background:rgba(127,192,255,.12);border-color:rgba(127,192,255,.45);color:var(--dub)}
@@ -104,19 +123,21 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .badge--dub{background:rgba(127,192,255,.12);color:var(--dub)}
 .badge--fill{background:rgba(229,72,77,.14);color:#ff8589}
 .badge--ok{background:rgba(76,195,138,.14);color:var(--ok)}
+.badge--here{background:var(--acc);color:#20180a;box-shadow:0 2px 8px rgba(245,165,36,.4)}
 
 /* ---------- home ---------- */
 .hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding:9dvh 18px 20px;gap:26px}
 .hero-brand{display:flex;flex-direction:column;align-items:center;gap:14px}
 .hero-mark{width:64px;height:64px;border-radius:18px;background:linear-gradient(160deg,#241c13,#151007);border:1px solid var(--line2);
-  display:flex;align-items:center;justify-content:center;color:var(--acc);box-shadow:var(--shadow)}
+  display:flex;align-items:center;justify-content:center;color:var(--acc);box-shadow:var(--shadow);animation:floatMark 3.5s var(--ease) infinite}
+@keyframes floatMark{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .hero-mark svg.ic{width:30px;height:30px;stroke-width:1.6}
 .hero h1{margin:0;font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1.1}
 .hero h1 b{color:var(--acc);font-weight:800}
 .hero p{margin:0;color:var(--faint);font-size:14px;letter-spacing:.02em}
 .searchwrap{width:100%;max-width:560px;position:relative}
 .searchbar{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--line2);border-radius:16px;
-  padding:5px 6px 5px 16px;transition:border-color .18s,box-shadow .18s}
+  padding:5px 6px 5px 16px;transition:border-color .18s var(--ease),box-shadow .18s var(--ease)}
 .searchbar:focus-within{border-color:rgba(245,165,36,.6);box-shadow:0 0 0 3px rgba(245,165,36,.12)}
 .searchbar>svg.ic{color:var(--faint);flex:none}
 .searchbar input{flex:1;min-width:0;background:none;border:0;color:var(--txt);font-size:16px;padding:12px 4px;letter-spacing:.01em}
@@ -127,9 +148,10 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   max-height:min(60dvh, 420px);
   -webkit-overflow-scrolling:touch;
   overscroll-behavior:contain;
-  z-index:60;display:none}
+  z-index:60;display:none;animation:suggPop .2s var(--ease-out)}
+@keyframes suggPop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .sugg.open{display:block}
-.sugg-item{display:flex;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sugg-item{display:flex;align-items:center;gap:12px;padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .12s var(--ease)}
 .sugg-item:last-child{border-bottom:0}
 .sugg-item:active,.sugg-item[data-active]{background:var(--bg4)}
 .sugg-thumb{width:40px;height:56px;border-radius:8px;object-fit:cover;background:var(--bg4);flex:none}
@@ -150,10 +172,12 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .shelf-hd .icbtn{width:38px;height:38px;border-radius:11px}
 .shelf-row{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .shelf-row::-webkit-scrollbar{display:none}
-.hcard{width:128px;flex:none;scroll-snap-align:start;cursor:pointer}
-.hcard .hposter{width:128px;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--line);position:relative}
-.hcard img{width:100%;height:100%;object-fit:cover}
-.hcard:active .hposter{border-color:var(--line2)}
+.hcard{width:128px;flex:none;scroll-snap-align:start;cursor:pointer;transition:transform .2s var(--ease)}
+.hcard:active{transform:scale(.97)}
+.hcard .hposter{width:128px;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:var(--bg3);border:1px solid var(--line);position:relative;transition:border-color .18s var(--ease),box-shadow .2s var(--ease)}
+.hcard:hover .hposter{border-color:var(--line2);box-shadow:var(--shadow-soft)}
+.hcard img{width:100%;height:100%;object-fit:cover;transition:transform .35s var(--ease)}
+.hcard:hover img{transform:scale(1.05)}
 .hcard .hcard-title{margin-top:8px;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hcard .hcard-meta{margin-top:3px;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hcard .hcard-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.55)}
@@ -161,6 +185,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .epchip{position:absolute;top:6px;left:6px;background:rgba(10,8,5,.82);color:var(--txt);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.05em}
 .imph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#57503f;background:var(--bg3)}
 .hcard.relcard{width:150px}
+.hcard.relcard .hposter{width:150px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;margin:16px 0}
 .grid .hcard{width:auto}
 .pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:22px 0 10px}
@@ -177,7 +202,8 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 
 /* ---------- details ---------- */
 .dhero{position:relative;min-height:216px;background:var(--bg2);overflow:hidden}
-.dhero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
+.dhero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5;transition:transform 1.5s var(--ease)}
+.dhero:hover .dhero-img{transform:scale(1.04)}
 .dhero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,10,7,.25) 0%,rgba(12,10,7,.72) 62%,var(--bg) 100%)}
 .dbody{position:relative;margin-top:-96px;padding:0 14px}
 .dhead{display:flex;gap:14px;align-items:flex-end}
@@ -194,19 +220,23 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .dcta .icbtn{border:1px solid var(--line2);background:var(--bg3);width:50px;height:50px;border-radius:14px}
 .dcta .icbtn.on{color:var(--acc);border-color:rgba(245,165,36,.5);background:var(--accsoft)}
 .genres{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 0}
-.genre{padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);font-size:12.5px;color:var(--dim);cursor:pointer}
-.genre:hover{border-color:var(--line2);color:var(--txt)}
+.genre{padding:6px 13px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);font-size:12.5px;color:var(--dim);cursor:pointer;transition:all .15s var(--ease)}
+.genre:hover{border-color:var(--line2);color:var(--txt);background:var(--bg3)}
 .synopsis{color:var(--dim);font-size:14px;line-height:1.65;margin:16px 0 0;white-space:pre-line}
 .synopsis.clamped{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.readmore{display:inline-flex;align-items:center;gap:5px;margin-top:8px;color:var(--acc);font-size:13px;font-weight:650;background:none;padding:6px 2px}
+.readmore{display:inline-flex;align-items:center;gap:5px;margin-top:8px;color:var(--acc);font-size:13px;font-weight:650;background:none;padding:6px 2px;transition:opacity .15s var(--ease)}
+.readmore:hover{opacity:.75}
 .facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:20px 0 0}
-.fact{background:var(--bg2);padding:11px 14px;min-width:0}
+.fact{background:var(--bg2);padding:11px 14px;min-width:0;transition:background .15s var(--ease)}
+.fact:hover{background:var(--bg3)}
 .fact b{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
 .fact span{font-size:13.5px;color:var(--txt);line-height:1.4;word-break:break-word}
 .fact--wide{grid-column:1 / -1}
-.sec{margin:30px 0}
+.sec{margin:30px 0;animation:secIn .35s var(--ease-out) both}
+@keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .sec>h2{display:flex;align-items:center;gap:9px;margin:0 0 13px;font-size:16.5px;font-weight:750;letter-spacing:.01em}
 .sec>h2 svg.ic{width:19px;height:19px;color:var(--acc);stroke-width:1.9}
+.sec>h2 .sub{font-size:12px;color:var(--faint);font-weight:400;margin-left:auto}
 .hscroll{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .hscroll::-webkit-scrollbar{display:none}
 .relcard{width:148px;flex:none;scroll-snap-align:start;cursor:pointer}
@@ -218,16 +248,27 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .chacard .cha-va{margin-top:3px;font-size:11px;color:var(--faint);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .chacard .cha-va::before{content:"VA ";color:#57503f;font-weight:700;letter-spacing:.05em}
 .wolist{display:flex;flex-direction:column;gap:8px;counter-reset:wo}
-.worow{display:flex;align-items:center;gap:12px;padding:9px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);cursor:pointer;counter-increment:wo}
-.worow:hover{border-color:var(--line2)}
-.worow.cur{border-color:rgba(245,165,36,.55);background:var(--accsoft)}
+.worow{display:flex;align-items:center;gap:12px;padding:9px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);cursor:pointer;counter-increment:wo;transition:all .18s var(--ease)}
+.worow:hover{border-color:var(--line2);background:var(--bg3)}
+.worow.cur{border-color:rgba(245,165,36,.55);background:var(--accsoft);box-shadow:0 0 0 1px rgba(245,165,36,.25)}
 .worow .wo-n{width:30px;height:30px;flex:none;border-radius:10px;background:var(--bg4);color:var(--dim);display:flex;align-items:center;justify-content:center;font-weight:750;font-size:13px}
 .worow.cur .wo-n{background:var(--acc);color:#20180a}
 .worow .wo-img{width:44px;height:60px;border-radius:8px;object-fit:cover;background:var(--bg4);flex:none}
 .worow .wo-t{min-width:0;flex:1}
 .worow .wo-title{font-size:13.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.worow .wo-meta{font-size:11.5px;color:var(--faint);margin-top:2px;display:flex;gap:6px;align-items:center}
-.worow .wo-here{margin-left:auto;color:var(--acc);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;flex:none}
+.worow.cur .wo-title{color:var(--txt)}
+.worow .wo-meta{font-size:11.5px;color:var(--faint);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.worow .wo-here{margin-left:auto;color:var(--acc);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;flex:none;display:inline-flex;align-items:center;gap:5px}
+.worow .wo-here::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc);animation:pulseDot 1.6s var(--ease) infinite}
+@keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* season / specials tab pills */
+.reltabs{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
+.reltab{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);font-size:12.5px;font-weight:650;cursor:pointer;transition:all .15s var(--ease);display:inline-flex;align-items:center;gap:6px}
+.reltab .n{background:var(--bg4);color:var(--faint);font-size:10.5px;padding:1px 7px;border-radius:8px;font-weight:700;letter-spacing:.03em}
+.reltab:hover{color:var(--txt);border-color:var(--line2)}
+.reltab.on{background:var(--accsoft);border-color:rgba(245,165,36,.55);color:var(--acc)}
+.reltab.on .n{background:rgba(245,165,36,.25);color:var(--acc)}
 
 /* ---------- watch ---------- */
 .watch-top{display:flex;align-items:center;gap:8px;padding:10px 0 2px}
@@ -278,14 +319,15 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   .player-wrap.embed-wrap{border-radius:18px;overflow:hidden}
 }
 .player .vign{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px rgba(0,0,0,.35)}
-.pload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,4,2,.55);z-index:8}
+.pload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,4,2,.55);z-index:8;animation:fadeIn .2s var(--ease)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .pload span{font-size:12.5px;color:var(--dim);letter-spacing:.04em}
 .centerplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:7;pointer-events:none}
 .centerplay .cp-btn{pointer-events:auto}
 .centerplay .cp-btn{width:76px;height:76px;border-radius:50%;background:none;border:0;color:var(--acc);
-  display:flex;align-items:center;justify-content:center;backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .12s;filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));  /* keep icon legible on bright video */}
+  display:flex;align-items:center;justify-content:center;backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .12s var(--ease);filter: drop-shadow(0 2px 8px rgba(0,0,0,.6))}
 .centerplay .cp-btn:active{transform:scale(.92)}
-.centerplay .cp-btn svg.ic{width:32px;height:32px;margin-left:4px;stroke-width:2;fill: rgba(0,0,0,.35);      /* subtle fill so the play triangle stays visible */
+.centerplay .cp-btn svg.ic{width:32px;height:32px;margin-left:4px;stroke-width:2;fill: rgba(0,0,0,.35);
   stroke: var(--acc);}
 .tapzone{position:absolute;top:0;bottom:24%;width:31%;z-index:5;display:none;align-items:center;justify-content:center}
 .tapzone--l{left:0}.tapzone--r{right:0}
@@ -293,23 +335,26 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .ripple{position:absolute;width:84px;height:84px;border-radius:50%;background:rgba(12,10,7,.55);color:var(--txt);display:flex;flex-direction:column;align-items:center;justify-content:center;
   font-size:13px;font-weight:700;opacity:0;pointer-events:none;border:1px solid rgba(255,255,255,.14)}
 .ripple svg.ic{width:22px;height:22px}
-.ripple.go{animation:rip .5s ease-out}
+.ripple.go{animation:rip .5s var(--ease-out)}
 @keyframes rip{0%{opacity:1;transform:scale(.7)}100%{opacity:0;transform:scale(1.25)}}
 .pctl{position:absolute;left:0;right:0;bottom:0;z-index:9;padding:26px 10px 8px;
-  background:linear-gradient(180deg,transparent,rgba(5,4,2,.82) 78%);opacity:1;transition:opacity .22s}
-.pctl.hide{opacity:0;pointer-events:none}
+  background:linear-gradient(180deg,transparent,rgba(5,4,2,.82) 78%);opacity:1;transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.pctl.hide{opacity:0;pointer-events:none;transform:translateY(4px)}
 .ptop{position:absolute;left:0;right:0;top:0;z-index:9;padding:8px 10px;display:flex;align-items:center;gap:8px;
-  background:linear-gradient(0deg,transparent,rgba(5,4,2,.75) 82%);opacity:1;transition:opacity .22s}
-.ptop.hide{opacity:0;pointer-events:none}
+  background:linear-gradient(0deg,transparent,rgba(5,4,2,.75) 82%);opacity:1;transition:opacity .28s var(--ease),transform .28s var(--ease)}
+.ptop.hide{opacity:0;pointer-events:none;transform:translateY(-4px)}
 .ptop .pt-title{font-size:13px;font-weight:650;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .pcbar{position:relative;height:22px;display:flex;align-items:center;cursor:pointer;touch-action:none}
-.pcbar .track{position:relative;height:4px;width:100%;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden}
-.pcbar .buf{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28);width:0}
-.pcbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--acc);width:0}
-.pcbar .knob{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:var(--acc);transform:translate(-50%,-50%);box-shadow:0 1px 6px rgba(0,0,0,.5)}
+.pcbar .track{position:relative;height:4px;width:100%;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden;transition:height .15s var(--ease)}
+.pcbar:hover .track{height:6px}
+.pcbar .buf{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28);width:0;transition:width .15s linear}
+.pcbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--acc);width:0;transition:width .05s linear}
+.pcbar .knob{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:var(--acc);transform:translate(-50%,-50%) scale(0);box-shadow:0 1px 6px rgba(0,0,0,.5);transition:transform .15s var(--ease-spring)}
+.pcbar:hover .knob,.pcbar.dragging .knob{transform:translate(-50%,-50%) scale(1)}
 .pcrow{display:flex;align-items:center;gap:2px;margin-top:2px}
-.pcbtn{width:44px;height:42px;display:flex;align-items:center;justify-content:center;color:#eee;border-radius:11px;position:relative;flex:none}
+.pcbtn{width:44px;height:42px;display:flex;align-items:center;justify-content:center;color:#eee;border-radius:11px;position:relative;flex:none;transition:color .15s var(--ease),background .15s var(--ease),transform .12s var(--ease)}
 .pcbtn:hover{color:#fff;background:rgba(255,255,255,.09)}
+.pcbtn:active{transform:scale(.9)}
 .pcbtn:disabled{opacity:.35;pointer-events:none}
 .pcbtn svg.ic{width:21px;height:21px}
 .timewrap{font-family:var(--mono);font-size:12px;color:#ddd;letter-spacing:.02em;white-space:nowrap;padding:0 8px;flex:none}
@@ -339,27 +384,29 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 }
 .pcpop{position:absolute;top:58px;right:6px;background:rgba(16,13,8,.96);border:1px solid var(--line2);border-radius:14px;min-width:172px;
   box-shadow:var(--shadow);z-index:20;display:none;overflow-x:hidden;overflow-y:auto;
-  max-height:min(300px,72%);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+  max-height:min(300px,72%);overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;animation:suggPop .18s var(--ease-out)}
 .pcpop.open{display:block}
 .pcpop::-webkit-scrollbar{width:8px}
 .pcpop::-webkit-scrollbar-thumb{background:#3b3020;border-radius:6px}
 .pcpop::-webkit-scrollbar-track{background:transparent}
 .pcpop .pop-hd{padding:9px 14px 5px;font-size:10.5px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
-.popitem{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13.5px;color:var(--dim);cursor:pointer;white-space:nowrap}
+.popitem{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13.5px;color:var(--dim);cursor:pointer;white-space:nowrap;transition:background .12s var(--ease),color .12s var(--ease)}
 .popitem:hover{background:rgba(255,255,255,.05);color:var(--txt)}
 .popitem.sel{color:var(--acc);font-weight:650}
 .popitem svg.ic{width:16px;height:16px;opacity:0}
 .popitem.sel svg.ic{opacity:1}
 .skipbtn{position:absolute;right:12px;bottom:74px;z-index:9;background:rgba(12,10,7,.72);border:1px solid rgba(245,165,36,.6);color:var(--acc);
-  border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;letter-spacing:.02em;display:none;align-items:center;gap:7px;backdrop-filter:blur(6px)}
+  border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;letter-spacing:.02em;display:none;align-items:center;gap:7px;backdrop-filter:blur(6px);animation:skipPop .25s var(--ease-spring)}
+@keyframes skipPop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .skipbtn.show{display:inline-flex}
-.endcard{position:absolute;inset:0;z-index:12;background:rgba(5,4,2,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
-.endcard.show{display:flex}
+.skipbtn:hover{background:rgba(20,16,10,.85);border-color:rgba(245,165,36,.85)}
+.endcard{position:absolute;inset:0;z-index:12;background:rgba(5,4,2,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px;backdrop-filter:blur(8px)}
+.endcard.show{display:flex;animation:fadeIn .3s var(--ease-out)}
 .endcard h3{margin:0;font-size:15px;color:var(--dim);font-weight:600;letter-spacing:.03em}
 .endcard .btn{min-width:210px}
 .endcard .ec-sub{font-size:12.5px;color:var(--faint)}
 .perr{position:absolute;inset:0;z-index:11;background:rgba(5,4,2,.9);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
-.perr.show{display:flex}
+.perr.show{display:flex;animation:fadeIn .25s var(--ease-out)}
 .perr svg.ic{width:36px;height:36px;color:var(--err);stroke-width:1.5}
 .perr h3{margin:0;font-size:15.5px}
 .perr p{margin:0;font-size:12.5px;color:var(--faint);max-width:300px}
@@ -368,7 +415,8 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .wctl-row .lbl{font-size:11px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);min-width:52px}
 .srvrow{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none}
 .srvrow::-webkit-scrollbar{display:none}
-.srvchip{display:flex;align-items:center;justify-content:center;gap:1px;min-height:44px;padding:7px 16px;border-radius:13px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;flex:none}
+.srvchip{display:flex;align-items:center;justify-content:center;gap:1px;min-height:44px;padding:7px 16px;border-radius:13px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;flex:none;transition:all .15s var(--ease)}
+.srvchip:hover{border-color:#4d3f28;background:var(--bg4)}
 .srvchip b{font-size:13.5px;font-weight:700;letter-spacing:.02em}
 .srvchip span{font-size:10.5px;color:var(--faint);letter-spacing:.03em}
 .srvchip.on{border-color:rgba(245,165,36,.6);background:var(--accsoft);color:var(--acc)}
@@ -377,14 +425,16 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .srvchip--dub.on span{color:#6da6d8}
 .modegrp{display:flex;gap:8px}
 .epgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px 10px;margin-top:14px}
-.epcard{position:relative;border-radius:13px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);cursor:pointer}
-.epcard:active{border-color:var(--line2)}
-.epcard.cur{border-color:rgba(245,165,36,.7);box-shadow:0 0 0 1px rgba(245,165,36,.35)}
+.epcard{position:relative;border-radius:13px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);cursor:pointer;transition:transform .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease)}
+.epcard:active{transform:scale(.98)}
+.epcard:hover{border-color:var(--line2);box-shadow:var(--shadow-soft)}
+.epcard.cur{border-color:rgba(245,165,36,.7);box-shadow:0 0 0 1px rgba(245,165,36,.35),var(--shadow-soft)}
 .epcard .epthumb{aspect-ratio:16/9;background:var(--bg3);position:relative;overflow:hidden}
-.epcard img{width:100%;height:100%;object-fit:cover}
+.epcard img{width:100%;height:100%;object-fit:cover;transition:transform .35s var(--ease)}
+.epcard:hover img{transform:scale(1.06)}
 .epcard .epnum{position:absolute;top:7px;left:7px;background:rgba(8,6,4,.85);color:var(--txt);border-radius:7px;font-size:10.5px;font-weight:800;padding:2px 7px;letter-spacing:.06em}
 .epcard.cur .epnum{background:var(--acc);color:#20180a}
-.epcard .epplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;background:rgba(5,4,2,.35);color:#fff}
+.epcard .epplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s var(--ease);background:rgba(5,4,2,.35);color:#fff}
 .epcard:hover .epplay,.epcard.cur .epplay{opacity:1}
 .epcard .epname{padding:9px 11px 11px;font-size:12.5px;line-height:1.35;color:var(--dim);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:44px}
 .epcard.cur .epname{color:var(--txt)}
@@ -395,9 +445,11 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 
 /* ---------- library ---------- */
 .tabs{display:flex;gap:8px;margin:16px 0 4px}
-.tab{flex:1;min-height:46px;border-radius:13px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);font-weight:650;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab{flex:1;min-height:46px;border-radius:13px;border:1px solid var(--line);background:var(--bg2);color:var(--dim);font-weight:650;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:all .15s var(--ease)}
+.tab:hover{color:var(--txt);border-color:var(--line2)}
 .tab.on{border-color:rgba(245,165,36,.55);background:var(--accsoft);color:var(--acc)}
-.histrow{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);margin-top:10px;cursor:pointer}
+.histrow{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);margin-top:10px;cursor:pointer;transition:all .18s var(--ease)}
+.histrow:hover{border-color:var(--line2);background:var(--bg3)}
 .histrow .hr-img{width:86px;aspect-ratio:16/9;border-radius:9px;object-fit:cover;background:var(--bg3);flex:none}
 .histrow .hr-t{min-width:0;flex:1}
 .histrow .hr-title{font-size:13.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -409,8 +461,30 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 /* ---------- toast ---------- */
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);background:rgba(22,18,11,.96);border:1px solid var(--line2);
   color:var(--txt);padding:11px 18px;border-radius:13px;font-size:13px;box-shadow:var(--shadow);z-index:100;opacity:0;pointer-events:none;
-  transition:opacity .2s,transform .2s;max-width:calc(100vw - 40px);text-align:center}
+  transition:opacity .2s var(--ease),transform .25s var(--ease-spring);max-width:calc(100vw - 40px);text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- changelog modal ---------- */
+.modal{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,4,2,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.modal.open{display:flex;animation:fadeIn .2s var(--ease)}
+.modal-card{background:var(--bg2);border:1px solid var(--line2);border-radius:18px;max-width:540px;width:100%;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:modalPop .25s var(--ease-spring)}
+@keyframes modalPop{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-hd{display:flex;align-items:center;gap:10px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.modal-hd h2{margin:0;font-size:17px;font-weight:750;display:flex;align-items:center;gap:8px}
+.modal-hd .ver-tag{background:var(--accsoft);color:var(--acc);border:1px solid rgba(245,165,36,.35);padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.04em}
+.modal-hd .x{margin-left:auto}
+.modal-bd{padding:16px 20px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-bd::-webkit-scrollbar{width:8px}
+.modal-bd::-webkit-scrollbar-thumb{background:#3b3020;border-radius:6px}
+.cl-section{margin:14px 0}
+.cl-section:first-child{margin-top:0}
+.cl-section h3{margin:0 0 8px;font-size:13.5px;font-weight:750;color:var(--acc);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:7px}
+.cl-section h3 .n{background:var(--bg4);color:var(--dim);font-size:10.5px;padding:1px 7px;border-radius:8px;font-weight:700;letter-spacing:.03em;text-transform:none}
+.cl-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.cl-list li{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--dim);line-height:1.5;padding-left:0}
+.cl-list li::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--acc);flex:none;margin-top:8px;opacity:.7}
+.cl-list li b{color:var(--txt);font-weight:650}
+.cl-list li code{background:var(--bg4);color:var(--acc);padding:1px 6px;border-radius:5px;font-family:var(--mono);font-size:11.5px}
 
 /* ---------- responsive ---------- */
 @media(min-width:640px){
@@ -438,6 +512,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  html{scroll-behavior:auto}
 }
 .searchbar input:focus,
 .searchbar input:focus-visible{
@@ -452,17 +527,20 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 /* ---------- watch page new styles ---------- */
 .watch-toggles{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .toggle-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);
-  background:var(--bg3);color:var(--faint);font-size:12px;font-weight:650;letter-spacing:.02em;white-space:nowrap;transition:all .15s;cursor:pointer}
+  background:var(--bg3);color:var(--faint);font-size:12px;font-weight:650;letter-spacing:.02em;white-space:nowrap;transition:all .15s var(--ease);cursor:pointer}
+.toggle-chip:hover{color:var(--dim);border-color:#4d3f28}
 .toggle-chip:active{transform:scale(.96)}
 .toggle-chip.on{background:var(--accsoft);border-color:rgba(245,165,36,.55);color:var(--acc)}
 .toggle-chip svg.ic{width:14px;height:14px}
 .ep-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ep-row::-webkit-scrollbar{display:none}
-.ep-card-sm{width:140px;flex:none;scroll-snap-align:start;cursor:pointer;border-radius:11px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);position:relative}
-.ep-card-sm:active{border-color:var(--line2)}
-.ep-card-sm.cur{border-color:rgba(245,165,36,.7);box-shadow:0 0 0 1px rgba(245,165,36,.35)}
+.ep-card-sm{width:140px;flex:none;scroll-snap-align:start;cursor:pointer;border-radius:11px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);position:relative;transition:transform .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease)}
+.ep-card-sm:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow-soft)}
+.ep-card-sm:active{transform:scale(.98)}
+.ep-card-sm.cur{border-color:rgba(245,165,36,.7);box-shadow:0 0 0 1px rgba(245,165,36,.35),var(--shadow-soft)}
 .ep-card-sm .epthumb{aspect-ratio:16/9;background:var(--bg3);position:relative;overflow:hidden}
-.ep-card-sm img{width:100%;height:100%;object-fit:cover}
+.ep-card-sm img{width:100%;height:100%;object-fit:cover;transition:transform .35s var(--ease)}
+.ep-card-sm:hover img{transform:scale(1.06)}
 .ep-card-sm .epnum{position:absolute;top:5px;left:5px;background:rgba(8,6,4,.85);color:var(--txt);border-radius:5px;font-size:9.5px;font-weight:800;padding:1px 6px;letter-spacing:.05em}
 .ep-card-sm.cur .epnum{background:var(--acc);color:#20180a}
 .ep-card-sm .epname{padding:7px 8px 8px;font-size:11.5px;line-height:1.3;color:var(--dim);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;min-height:28px;white-space:nowrap}
@@ -488,18 +566,19 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   display:none;
   backdrop-filter:none;
   letter-spacing:.04em;
-  text-shadow:0 0 6px rgba(0,0,0,.6); /* optional: keeps text readable */
+  text-shadow:0 0 6px rgba(0,0,0,.6);
 }
 .speed-pill.show{display:block}
 
 /* keyboard hint */
 .kbd-hint{display:flex;align-items:center;gap:10px;justify-content:center;padding:8px 14px;margin:8px 0 0;background:var(--bg2);border:1px solid var(--line);border-radius:12px;font-size:11.5px;color:var(--faint);flex-wrap:wrap}
 .kbd-hint .kbd{font-size:10px}
-.kbd-hint .dismiss{color:var(--dim);cursor:pointer;font-weight:650;padding:2px 6px;border-radius:6px}
+.kbd-hint .dismiss{color:var(--dim);cursor:pointer;font-weight:650;padding:2px 6px;border-radius:6px;transition:background .15s var(--ease),color .15s var(--ease)}
 .kbd-hint .dismiss:hover{color:var(--txt);background:var(--bg3)}
 
 /* relation badge on cards */
 .rel-badge{position:absolute;bottom:6px;left:6px;background:rgba(12,10,7,.82);color:var(--dim);font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;letter-spacing:.05em;text-transform:uppercase}
+.rel-badge.cur{background:var(--acc);color:#20180a}
 
 /* seasons row on watch page */
 .season-row .hcard{width:130px}
@@ -508,9 +587,14 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 /* compact server row */
 .srvrow-compact{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none}
 .srvrow-compact::-webkit-scrollbar{display:none}
-.srv-chip-sm{display:flex;align-items:center;justify-content:center;min-height:36px;padding:5px 13px;border-radius:10px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;flex:none;font-size:12.5px;font-weight:650;color:var(--dim)}
+.srv-chip-sm{display:flex;align-items:center;justify-content:center;min-height:36px;padding:5px 13px;border-radius:10px;border:1px solid var(--line2);background:var(--bg3);cursor:pointer;flex:none;font-size:12.5px;font-weight:650;color:var(--dim);transition:all .15s var(--ease)}
+.srv-chip-sm:hover{color:var(--txt);border-color:#4d3f28;background:var(--bg4)}
 .srv-chip-sm.on{border-color:rgba(245,165,36,.6);background:var(--accsoft);color:var(--acc)}
 .srv-chip-sm.dub.on{border-color:rgba(127,192,255,.5);background:rgba(127,192,255,.1);color:var(--dub)}
+
+/* view transition: fade between routes */
+#view{animation:viewIn .25s var(--ease-out) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -554,16 +638,35 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   <symbol id="i-autonext" viewBox="0 0 24 24"><path d="M4 6.5 12 12l-8 5.5zM15 6.5 20 12l-5 5.5z"/><path d="M22 5v14"/></symbol>
   <symbol id="i-autoplay" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m10 8.5 5.5 3.5-5.5 3.5z" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-kbd" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M9 14h6"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3.5 11.5V5A1.5 1.5 0 0 1 5 3.5h6.5L20 12l-7.5 8z"/><circle cx="8" cy="8" r="1.4"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.5 3-2 4-2 7a2 2 0 0 0 4 0c0-.5.5-.8.5-1.5 1 1.5 2.5 3 2.5 5.5a5 5 0 1 1-10 0c0-3 3-5 5-11z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
 </svg>
 
 <header id="hd" class="hd"><div class="hd-in" id="hdIn"></div></header>
 <main id="view" class="view" tabindex="-1"></main>
 <div id="toast" class="toast" role="status"></div>
+
+<!-- Changelog modal -->
+<div id="changelogModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="clTitle">
+  <div class="modal-card">
+    <div class="modal-hd">
+      <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
+      <span class="ver-tag">v1.0.0</span>
+      <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-bd" id="clBody"></div>
+  </div>
+</div>
+
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi — core ================= */
+/* ================= AniKuoshi v1.0 — core ================= */
 'use strict';
 
+const APP_VERSION = '1.0.0';
 const API_BASE = 'https://apikuoshi-v2.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -647,6 +750,22 @@ function statusKind(status) {
   if (s.includes('not yet') || s.includes('upcoming')) return 'upcoming';
   if (s.includes('airing') && !s.includes('finished')) return 'airing';
   return 'done';
+}
+
+/* ---------- routing key helpers (slug-first, NOT encoded) ---------- */
+/* For ROUTES (path segments) we prefer slugs and never URI-encode the segment.
+   Slugs are kebab-case ASCII so no encoding is needed; anilist:<id> keeps its
+   colon because ':' is a valid sub-delim allowed in URL path segments.      */
+function routeKey(entry) {
+  if (!entry) return '';
+  // Prefer slug (always resolvable upstream), fall back to key
+  return entry.slug || entry.identities && entry.identities.preferred || entry.key || '';
+}
+function routeFor(entry) {
+  return '#/anime/' + routeKey(entry);
+}
+function watchRouteFor(entry, ep) {
+  return '#/watch/' + routeKey(entry) + '/' + (ep || 1);
 }
 
 /* ---------- timeout fetch ---------- */
@@ -736,9 +855,114 @@ const API = {
   },
   abs(u) { return u && u.charAt(0) === '/' ? API_BASE + u : u; }
 };
+/* API calls DO URI-encode their query params (key/ep/slug etc.) */
 const enc = encodeURIComponent;
 const epUrl = (key, ep) => `/api/watch?key=${enc(key)}&ep=${enc(ep)}`;
 const animeUrl = key => `/api/anime?key=${enc(key)}`;
+const metaUrl = key => `/api/meta?key=${enc(key)}`;
+const episodesUrl = key => `/api/anime/episodes?key=${enc(key)}`;
+const seasonsUrl = slugOrKey => `/api/seasons/${enc(slugOrKey)}`;   // path param, encoded
+const watchOrderUrl = slugOrKey => `/api/watch-order/${enc(slugOrKey)}`;
+
+/* ---------- franchise graph helpers ----------
+   The /api/seasons and /api/watch-order endpoints are ASYMMETRIC: querying on
+   a sequel returns no franchise data. We must follow PREQUEL relations up to
+   the franchise root, then call /api/watch-order/<rootKey> for the full graph. */
+const Franchise = {
+  _rootCache: new Map(),
+  async resolveRoot(anime) {
+    if (!anime || !anime.key) return anime || null;
+    const startKey = anime.key;
+    if (this._rootCache.has(startKey)) return this._rootCache.get(startKey);
+    let current = anime;
+    let hops = 0;
+    const visited = new Set();
+    while (hops < 8) {
+      if (visited.has(current.key)) break;
+      visited.add(current.key);
+      let prequel = null;
+      try {
+        const det = await API.get(animeUrl(current.key), 10 * 60000);
+        const entries = (det.relations && det.relations.entries) || [];
+        prequel = entries.find(e => e && (e.relation === 'PREQUEL' || e.relation === 'prequel'));
+      } catch (e) { break; }
+      if (!prequel || !prequel.key) break;
+      current = prequel;
+      hops++;
+    }
+    this._rootCache.set(startKey, current);
+    return current;
+  },
+  async watchOrder(anime) {
+    const root = await this.resolveRoot(anime);
+    if (!root) return [];
+    try {
+      const woData = await API.get(watchOrderUrl(root.slug || root.key), 30 * 60000);
+      const rows = woData.watchOrder || woData.related || [];
+      return rows.slice().sort((a, b) => {
+        const ra = Number(a.releaseOrder || a.order || 9999);
+        const rb = Number(b.releaseOrder || b.order || 9999);
+        if (ra !== rb) return ra - rb;
+        return (a.year || 9999) - (b.year || 9999);
+      });
+    } catch (e) { return []; }
+  },
+  async fullFranchise(anime) {
+    const root = await this.resolveRoot(anime);
+    if (!root) return { seasons: [], specials: [], watchOrder: [] };
+    /* Call both endpoints in parallel:
+       - /api/seasons/:slug    → groups{} (bucketed relations)
+       - /api/watch-order/:slug → watchOrder[] (release-sorted franchise timeline)
+       The /api/seasons endpoint does NOT include watchOrder data, so we always
+       call /api/watch-order separately.                                           */
+    const [sdResult, woResult] = await Promise.allSettled([
+      API.get(seasonsUrl(root.slug || root.key), 30 * 60000),
+      API.get(watchOrderUrl(root.slug || root.key), 30 * 60000)
+    ]);
+    if (sdResult.status === 'rejected' && woResult.status === 'rejected') {
+      return { groups: {}, watchOrder: [], root, source: 'none' };
+    }
+    const sd = sdResult.status === 'fulfilled' ? sdResult.value : { groups: {}, source: 'none' };
+    const woData = woResult.status === 'fulfilled' ? woResult.value : {};
+    const groups = sd.groups || {};
+    const sortByRelease = arr => arr.slice().sort((a, b) => {
+      const ra = Number(a.releaseOrder || a.order || 9999);
+      const rb = Number(b.releaseOrder || b.order || 9999);
+      if (ra !== rb) return ra - rb;
+      return (a.year || 9999) - (b.year || 9999);
+    });
+    const wo = sortByRelease(woData.watchOrder || woData.related || sd.watchOrder || sd.related || []);
+    return { groups, watchOrder: wo, root, source: sd.source || 'none' };
+  }
+};
+
+/* Categorize an anime entry as a "season" (main TV series) or a "special"
+   (movie, OVA, ONA, special, alternative, side story, summary, etc.) */
+function categorizeFranchiseEntry(entry, relation) {
+  if (!entry) return 'special';
+  const t = (entry.type || '').toUpperCase();
+  const rel = String(relation || '').toLowerCase();
+  // Main-series TV seasons are prequel/sequel/parent TV series
+  if (rel === 'prequel' || rel === 'sequel' || rel === 'parent') {
+    if (t === 'TV' || t === '' || t === 'UNKNOWN') return 'season';
+  }
+  // sideStory can be either, but typically goes to specials unless it's TV
+  if (rel === 'sidestory') {
+    if (t === 'TV') return 'season';
+    return 'special';
+  }
+  // 'self' is the queried anime
+  if (rel === 'self') {
+    if (t === 'TV' || t === '' || t === 'UNKNOWN') return 'season';
+    return 'special';
+  }
+  // Everything else (movie, ova, ona, special, alternative, spin_off, summary, related, character, other, source)
+  if (t === 'MOVIE' || t === 'OVA' || t === 'ONA' || t === 'SPECIAL' || t === 'MUSIC') return 'special';
+  if (['alternative', 'spinoff', 'special', 'ova', 'ona', 'movie', 'summary', 'related', 'character', 'other', 'source'].includes(rel)) return 'special';
+  // Fall-through: TV with unknown relation
+  if (t === 'TV') return 'season';
+  return 'special';
+}
 
 /* ---------- persistent store ---------- */
 const Store = {
@@ -817,14 +1041,15 @@ function animeCard(entry, opts) {
       imgOrPh(entry.poster, '', bestTitle(entry), 'film'),
       opts.epNum != null ? h('span', { class: 'epchip', text: 'EP ' + opts.epNum }) : null,
       opts.progress ? h('div', { class: 'hcard-prog' }, h('i', { style: 'width:' + Math.min(100, Math.round(opts.progress * 100)) + '%' })) : null,
-      opts.relBadge ? h('span', { class: 'rel-badge', text: opts.relBadge }) : null
+      opts.relBadge ? h('span', { class: 'rel-badge' + (opts.relBadge === 'You are here' ? ' cur' : ''), text: opts.relBadge }) : null
     ),
     h('div', { class: 'hcard-title', text: bestTitle(entry) }),
     h('div', { class: 'hcard-meta', text: metaLine(entry) })
   );
-  const go = () => { location.hash = '#/anime/' + enc(key); };
-  card.addEventListener('click', go);
-  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  /* ROUTES use the slug (no encoding); API calls (in prefetchDetails) still encode */
+  const goCard = () => { location.hash = routeFor(entry); };
+  card.addEventListener('click', goCard);
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goCard(); } });
   card.addEventListener('pointerenter', () => prefetchDetails(key));
   card.addEventListener('touchstart', () => prefetchDetails(key), { passive: true, once: true });
   return card;
@@ -833,7 +1058,13 @@ function emptyState(iconName, title, body, actions) {
   return h('div', { class: 'statebox' }, ic(iconName), h('h3', { text: title }), h('p', { text: body }), actions || null);
 }
 
-/* ---------- router ---------- */
+/* ---------- router ----------
+   Routes are SLUG-based and never URI-encoded. Routes look like:
+     #/anime/frieren-beyond-journey-s-end-c6fbj
+     #/anime/sousou-no-frieren
+     #/anime/anilist:154587       (colon is a valid URL sub-delim)
+     #/watch/frieren-beyond-journey-s-end-c6fbj/3
+   Query params ARE still encoded via URLSearchParams.                            */
 const Router = {
   seq: 0,
   scrollMem: new Map(),
@@ -841,6 +1072,9 @@ const Router = {
   current: null,
   navStack: [],
   navIndex: -1,
+  /* When the watch view does an in-place episode switch (no re-render) it
+     replaces the hash silently and sets this flag so hashchange ignores it. */
+  silent: false,
   parse() {
     let hs = location.hash || '#/';
     hs = hs.slice(1);
@@ -874,6 +1108,23 @@ const Router = {
       Header.brand();
     }
     if (savedY != null && seg.length) requestAnimationFrame(() => { if (my === this.seq) window.scrollTo(0, savedY); });
+    /* Trigger AOS refresh after view swap */
+    requestAnimationFrame(() => { if (window.AOS) AOS.refresh(); });
+  },
+  /* In-place hash update: replace the URL silently without triggering render */
+  replaceHashSilent(newHash) {
+    if (location.hash === newHash) return;
+    this.silent = true;
+    const prev = this.current;
+    try { history.replaceState(null, '', newHash); }
+    catch (e) { location.hash = newHash; this.silent = false; return; }
+    this.current = newHash;
+    /* keep navStack coherent */
+    if (this.navIndex >= 0 && this.navStack[this.navIndex] === prev) {
+      this.navStack[this.navIndex] = newHash;
+    }
+    /* hashchange may still fire on some browsers; the silent flag handles it */
+    setTimeout(() => { this.silent = false; }, 30);
   },
   back() {
     if (this.navIndex > 0) {
@@ -890,6 +1141,7 @@ const Router = {
     this.navStack = [initial];
     this.navIndex = 0;
     addEventListener('hashchange', () => {
+      if (this.silent) return;
       const hash = location.hash || '#/';
       if (this.navStack[this.navIndex] !== hash) {
         this.navStack = this.navStack.slice(0, this.navIndex + 1);
@@ -917,11 +1169,12 @@ const Header = {
   el: $('#hdIn'),
   brand() {
     this.el.replaceChildren(
-      h('a', { class: 'brand', href: '#/', 'aria-label': 'AniKuoshi home' },
+      h('a', { class: 'brand', onclick: () => go('#/'), 'aria-label': 'AniKuoshi home' },
         h('span', { class: 'brand-mark' }, ic('play', 16)),
         h('span', { class: 'brand-name', html: 'Ani<b>Kuoshi</b>' })
       ),
       h('span', { class: 'hd-sp' }),
+      h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
       h('button', { class: 'hd-btn', 'aria-label': 'Library', onclick: () => go('#/library') }, ic('lib'))
     );
     document.title = 'AniKuoshi';
@@ -932,6 +1185,7 @@ const Header = {
       h('button', { class: 'hd-btn', 'aria-label': 'Back', onclick: () => Router.back() }, ic('back')),
       h('div', { class: 'hd-title', text: title }),
       h('span', { class: 'hd-sp' }),
+      h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
       opts.starKey ? h('button', { class: 'hd-btn' + (Store.isFav(opts.starKey) ? ' star-on' : ''), 'aria-label': 'Favorite', id: 'hdStar', onclick: () => {
         const btn = $('#hdStar');
         const on = Store.toggleFav(opts.starCard);
@@ -944,9 +1198,52 @@ const Header = {
     document.title = (title ? title + ' \u00b7 ' : '') + 'AniKuoshi';
   }
 };
+
+/* ---------- changelog ---------- */
+const Changelog = {
+  modal: null,
+  body: null,
+  init() {
+    this.modal = $('#changelogModal');
+    this.body = $('#clBody');
+    this.body.replaceChildren(
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('spark', 14), 'AniKuoshi v1.0', h('span', { class: 'n', text: 'Initial public release' })),
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'A clean, fast way to search, discover, and stream anime. Built on APIKuoshi, mobile-first, no AI slop.' }),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Franchise-aware seasons & specials.'), ' Details and Watch pages now correctly resolve to the franchise root (following PREQUEL relations) and split entries into a chronological Seasons list and a Specials bucket (movies, OVAs, ONAs, side stories, alternatives).')),
+          h('li', null, h('span', null, h('b', null, 'Accurate watch order.'), ' Uses ', h('code', null, '/api/watch-order'), ' sorted by release year, with a pulsing "You are here" indicator pinned to the current anime.')),
+          h('li', null, h('span', null, h('b', null, 'Removed redundant Related row'), ' on the watch page — Seasons & Specials cover it.')),
+          h('li', null, h('span', null, h('b', null, 'Player: no more janky controls after buffering.'), ' Loading overlay hides cleanly; controls stay hidden until you move the mouse (PC) or tap the video (mobile).')),
+          h('li', null, h('span', null, h('b', null, 'Episode switching never breaks fullscreen.'), ' Next / Prev / Auto-next / episode-card clicks all reload the stream in place — the fullscreen element stays mounted. URL updates silently via ', h('code', null, 'history.replaceState'), '.')),
+          h('li', null, h('span', null, h('b', null, 'Slug-based routing.'), ' Routes look like ', h('code', null, '#/anime/frieren-beyond-journey-s-end-c6fbj'), ' — no URL-encoded colons or hashes in the path. API query params are still properly encoded.')),
+          h('li', null, h('span', null, h('b', null, 'Smooth animations & AOS.'), ' Subtle entrance animations on cards/sections, smoother control transitions, hover lift on posters, modal pop with spring easing.')),
+          h('li', null, h('span', null, h('b', null, 'Mobile-first polish.'), ' Tighter tap targets, swipeable shelves, safe-area-aware fullscreen controls, landscape phone player fix, dynamic seekbar height.')),
+          h('li', null, h('span', null, h('b', null, 'Design language: "not so AI."'), ' Espresso-black + amber palette, hand-tuned radii, real shadows, custom keyframe loaders, no purple gradients, no glassmorphism overload.'))
+        )
+      ),
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('kbd', 14), 'Keyboard shortcuts', h('span', { class: 'n', text: 'while watching' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Space / K'), ' — play or pause')),
+          h('li', null, h('span', null, h('b', null, 'J / L'), ' — seek -10s / +10s,  ',  h('b', null, '\u2190 / \u2192'), ' — seek -5s / +5s')),
+          h('li', null, h('span', null, h('b', null, '\u2191 / \u2193'), ' — volume up / down,  ', h('b', null, 'M'), ' — mute')),
+          h('li', null, h('span', null, h('b', null, 'F'), ' — toggle fullscreen,  ', h('b', null, 'C'), ' — cycle subtitle tracks')),
+          h('li', null, h('span', null, h('b', null, 'N / P'), ' — next / previous episode (keeps fullscreen)')),
+          h('li', null, h('span', null, h('b', null, 'Esc'), ' — close popups'))
+        )
+      )
+    );
+    $('#clClose').addEventListener('click', () => Changelog.close());
+    this.modal.addEventListener('click', e => { if (e.target === this.modal) Changelog.close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && this.modal.classList.contains('open')) this.close(); });
+  },
+  open() { this.modal.classList.add('open'); document.body.style.overflow = 'hidden'; },
+  close() { this.modal.classList.remove('open'); document.body.style.overflow = ''; }
+};
 </script>
 <script>
-/* ================= AniKuoshi — views: home / search / library ================= */
+/* ================= AniKuoshi v1.0 — views: home / search / library ================= */
 'use strict';
 
 /* ---------- live suggestions ---------- */
@@ -1022,7 +1319,7 @@ const Suggest = {
       close();
       input.blur();
       if (opts.onPick) opts.onPick(it);
-      else if (it && it.key) go('#/anime/' + enc(it.key));
+      else if (it && it.key) go(routeFor(it));
       else toast('Could not open that title');
     };
 
@@ -1070,7 +1367,8 @@ const Suggest = {
 /* ---------- home ---------- */
 function cwCard(entry) {
   const pct = entry.dur ? Math.min(100, Math.round((entry.pos / entry.dur) * 100)) : 0;
-  const card = h('div', { class: 'hcard', tabindex: '0', role: 'link', 'aria-label': 'Continue ' + bestTitle(entry) + ' episode ' + entry.ep },
+  const card = h('div', { class: 'hcard', tabindex: '0', role: 'link', 'aria-label': 'Continue ' + bestTitle(entry) + ' episode ' + entry.ep,
+    'data-aos': 'fade-up' },
     h('div', { class: 'hposter' },
       imgOrPh(entry.thumb || entry.poster, '', bestTitle(entry), 'film'),
       h('span', { class: 'epchip', text: 'EP ' + entry.ep }),
@@ -1079,7 +1377,7 @@ function cwCard(entry) {
     h('div', { class: 'hcard-title', text: bestTitle(entry) }),
     h('div', { class: 'hcard-meta', text: pct >= 96 ? 'Finished \u00b7 EP ' + entry.ep : fmtTime(entry.pos) + ' \u00b7 EP ' + entry.ep })
   );
-  const goWatch = () => go('#/watch/' + enc(entry.key) + '/' + entry.ep);
+  const goWatch = () => go(watchRouteFor(entry, entry.ep));
   card.addEventListener('click', goWatch);
   card.addEventListener('keydown', e => { if (e.key === 'Enter') goWatch(); });
   card.addEventListener('pointerenter', () => prefetchDetails(entry.key));
@@ -1087,7 +1385,7 @@ function cwCard(entry) {
 }
 function shelfShell(title, iconName, sub) {
   return {
-    root: h('section', { class: 'shelf' },
+    root: h('section', { class: 'shelf', 'data-aos': 'fade-up' },
       h('div', { class: 'shelf-hd' }, ic(iconName), h('h2', { text: title }), sub ? h('span', { class: 'sub', text: sub }) : null),
       h('div', { class: 'shelf-row' })
     ),
@@ -1113,7 +1411,7 @@ const Views = {
       if (q.length >= 2) go('#/search?q=' + enc(q));
       else input.focus();
     });
-    const hero = h('section', { class: 'hero' },
+    const hero = h('section', { class: 'hero', 'data-aos': 'fade' },
       h('div', { class: 'hero-brand' },
         h('div', { class: 'hero-mark' }, ic('play')),
         h('h1', { html: 'Ani<b>Kuoshi</b>' }),
@@ -1134,10 +1432,20 @@ const Views = {
       shelves.append(s.fill(favs.slice(0, 14).map(f => animeCard(f))));
     }
     shelves.append(
-      h('div', { class: 'foot', text: 'AniKuoshi | Ryzishin' })
+      h('div', { class: 'foot' },
+        h('div', null, h('a', { onclick: () => Changelog.open(), style: 'cursor:pointer', text: 'AniKuoshi v' + APP_VERSION }), ' \u00b7 built by Ryzishin'),
+        h('div', { class: 'foot-ver' },
+          h('span', { text: 'APIKuoshi-powered' }),
+          h('span', { class: 'dot' }),
+          h('span', { text: 'mobile-first' }),
+          h('span', { class: 'dot' }),
+          h('span', { text: 'no AI slop' })
+        )
+      )
     );
     view.replaceChildren(hero, shelves);
     if (my !== Router.seq) return;
+    if (window.AOS) AOS.refresh();
   }
 };
 
@@ -1179,7 +1487,12 @@ Views.search = async function (view, my, q, page) {
     gridWrap.append(emptyState('search', 'No results for \u201c' + q + '\u201d', 'Try a different spelling, the romaji title, or a shorter fragment.'));
   } else {
     gridWrap.append(grid);
-    grid.replaceChildren(...results.map(r => animeCard(r)));
+    grid.replaceChildren(...results.map((r, i) => {
+      const c = animeCard(r);
+      c.setAttribute('data-aos', 'fade-up');
+      c.setAttribute('data-aos-delay', String(Math.min(i * 40, 400)));
+      return c;
+    }));
     const pager = h('div', { class: 'pager' },
       h('button', { class: 'btn btn--line', disabled: page <= 1 || undefined, onclick: () => go('#/search?q=' + enc(q) + '&p=' + (page - 1)) }, ic('back'), 'Prev'),
       h('span', { text: 'Page ' + page }),
@@ -1187,6 +1500,7 @@ Views.search = async function (view, my, q, page) {
     );
     gridWrap.append(pager);
   }
+  if (window.AOS) AOS.refresh();
 };
 
 /* ---------- library ---------- */
@@ -1218,6 +1532,7 @@ Views.library = async function (view, my, tab) {
       const grid = h('div', { class: 'grid' });
       for (const f of favs) {
         const c = animeCard(f);
+        c.setAttribute('data-aos', 'fade-up');
         const rm = h('button', { class: 'icbtn', 'aria-label': 'Remove favorite', style: 'position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:10px;background:rgba(8,6,4,.8)' }, ic('x'));
         rm.addEventListener('click', e => {
           e.stopPropagation();
@@ -1238,7 +1553,7 @@ Views.library = async function (view, my, tab) {
     } else {
       for (const it of hist) {
         const pct = it.dur ? Math.min(100, Math.round((it.pos / it.dur) * 100)) : 0;
-        const row = h('div', { class: 'histrow', tabindex: '0', role: 'link' },
+        const row = h('div', { class: 'histrow', tabindex: '0', role: 'link', 'data-aos': 'fade-up' },
           imgOrPh(it.thumb || it.poster, 'hr-img', bestTitle(it), 'film'),
           h('div', { class: 'hr-t' },
             h('div', { class: 'hr-title', text: bestTitle(it) }),
@@ -1247,8 +1562,8 @@ Views.library = async function (view, my, tab) {
           ),
           h('button', { class: 'icbtn hr-x', 'aria-label': 'Remove entry' }, ic('x'))
         );
-        row.addEventListener('click', () => go('#/watch/' + enc(it.key) + '/' + it.ep));
-        row.addEventListener('keydown', e => { if (e.key === 'Enter') go('#/watch/' + enc(it.key) + '/' + it.ep); });
+        row.addEventListener('click', () => go(watchRouteFor(it, it.ep)));
+        row.addEventListener('keydown', e => { if (e.key === 'Enter') go(watchRouteFor(it, it.ep)); });
         $('.hr-x', row).addEventListener('click', e => {
           e.stopPropagation();
           Store.removeHist(it.key, it.ep);
@@ -1259,22 +1574,24 @@ Views.library = async function (view, my, tab) {
       }
     }
   }
+  if (window.AOS) AOS.refresh();
 };
 </script>
 <script>
-/* ================= AniKuoshi — views: details ================= */
+/* ================= AniKuoshi v1.0 — views: details ================= */
 'use strict';
 
-const GROUP_ORDER = ['prequel', 'sequel', 'sideStory', 'related', 'summary', 'alternative', 'parent', 'spinOff', 'character', 'other'];
 const GROUP_LABEL = {
   prequel: 'Prequel', sequel: 'Sequel', sideStory: 'Side story', related: 'Related',
   summary: 'Summary', alternative: 'Alternative', parent: 'Parent story',
-  spinOff: 'Spin-off', character: 'Character', other: 'Other'
+  spinOff: 'Spin-off', character: 'Character', other: 'Other',
+  special: 'Special', ova: 'OVA', ona: 'ONA', movie: 'Movie', self: 'This title'
 };
-const SPECIAL_TYPES = ['OVA', 'ONA', 'SPECIAL', 'MUSIC'];
+const SEASON_RELATIONS = ['prequel', 'sequel', 'sideStory', 'parent', 'self'];
+const SPECIAL_RELATIONS = ['movie', 'ova', 'ona', 'special', 'summary', 'alternative', 'spinoff', 'related', 'character', 'other', 'source'];
 
 function sectionBlock(title, iconName) {
-  const el = h('section', { class: 'sec', hidden: true }, h('h2', null, ic(iconName), title));
+  const el = h('section', { class: 'sec', hidden: true, 'data-aos': 'fade-up' }, h('h2', null, ic(iconName), title));
   return {
     el,
     fill(...nodes) {
@@ -1352,12 +1669,12 @@ Views.details = async function (view, my, key) {
   if (kind === 'upcoming') {
     cta = h('button', { class: 'btn btn--line btn--lg', disabled: true }, ic('clock'), 'Unaired');
   } else if (progHit) {
-    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go('#/watch/' + enc(a.key) + '/' + progHit.ep) },
+    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go(watchRouteFor(a, progHit.ep)) },
       ic('play'), 'Continue EP ' + progHit.ep + (progHit.pos ? ' \u00b7 ' + fmtTime(progHit.pos) : ''));
   } else if (single) {
-    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go('#/watch/' + enc(a.key) + '/1') }, ic('play'), 'Watch');
+    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go(watchRouteFor(a, 1)) }, ic('play'), 'Watch');
   } else {
-    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go('#/watch/' + enc(a.key) + '/1') }, ic('play'), 'Watch EP 1');
+    cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go(watchRouteFor(a, 1)) }, ic('play'), 'Watch EP 1');
   }
   const dStar = h('button', { class: 'icbtn' + (Store.isFav(a.key) ? ' on' : ''), id: 'dStar', 'aria-label': 'Toggle favorite', 'aria-pressed': 'false',
     onclick: () => { const on = Store.toggleFav(favCard); paintStar(on); toast(on ? 'Added to favorites' : 'Removed from favorites'); } }, ic('star'));
@@ -1372,7 +1689,7 @@ Views.details = async function (view, my, key) {
     } }, 'Read more') : null) : null;
   if (syn.length > 320) synEl.classList.add('clamped');
 
-  const head = h('div', { class: 'dbody' },
+  const head = h('div', { class: 'dbody', 'data-aos': 'fade-up' },
     h('div', { class: 'dhead' },
       h('div', { class: 'dposter' }, imgOrPh(a.poster, '', bestTitle(a), 'film')),
       h('div', { class: 'dinfo' },
@@ -1435,98 +1752,162 @@ Views.details = async function (view, my, key) {
 
   /* ---------- progressive sections ---------- */
   const secChars = sectionBlock('Characters & voice actors', 'users');
-  const secSeasons = sectionBlock('Seasons & related', 'tv');
-  const secMovies = sectionBlock('Movies', 'film');
-  const secWo = sectionBlock('Watch order', 'map');
+  const secSeasons = sectionBlock('Seasons', 'tv');
+  const secSpecials = sectionBlock('Specials & movies', 'film');
+  const secWo = sectionBlock('Franchise watch order', 'map');
   const secRecs = sectionBlock('More like this', 'heart-list');
-  const secRoot = h('div', { class: 'wrap' }, secChars.el, secSeasons.el, secMovies.el, secWo.el, secRecs.el);
+  const secRoot = h('div', { class: 'wrap' }, secChars.el, secSeasons.el, secSpecials.el, secWo.el, secRecs.el);
   view.append(secRoot);
 
-  /* ---- Seasons: merge prequel/sequel/sideStory/related ---- */
+  /* ---- Seasons & Specials: use franchise graph (resolves root first) ---- */
   const relEntries = (data.relations && data.relations.entries) || [];
-  const byKey = new Map();
-  for (const e of relEntries) if (e && e.key && !byKey.has(e.key)) byKey.set(e.key, e);
 
-  // gather seasons from groups
-  const seasonKeys = new Set();
-  const seasonMap = new Map();
-  const groups = (data.relations && data.relations.groups) || {};
-  ['prequel', 'sequel', 'sideStory', 'related', 'parent', 'spinOff'].forEach(gk => {
-    const entries = groups[gk];
-    if (!entries || !entries.length) return;
-    for (const e of entries) {
-      if (!e || !e.key || seasonKeys.has(e.key)) continue;
-      seasonKeys.add(e.key);
-      seasonMap.set(e.key, { entry: e, relation: gk });
+  /* Local fallback from direct relations, used when franchise walk fails */
+  function localCategorize() {
+    const seasons = [];
+    const specials = [];
+    const seen = new Set();
+    /* Include self in seasons (it's the current anime) */
+    const selfEntry = Object.assign({}, a, { relation: 'self' });
+    if (selfEntry.key) { seen.add(selfEntry.key); seasons.push({ entry: selfEntry, relation: 'self' }); }
+    /* Prequels/sequels/parent TV series → seasons */
+    const groups = (data.relations && data.relations.groups) || {};
+    ['prequel', 'sequel', 'parent'].forEach(gk => {
+      const entries = groups[gk];
+      if (!entries || !entries.length) return;
+      for (const e of entries) {
+        if (!e || !e.key || seen.has(e.key)) continue;
+        seen.add(e.key);
+        seasons.push({ entry: e, relation: gk });
+      }
+    });
+    /* sideStory → specials unless TV */
+    if (groups.sideStory) {
+      for (const e of groups.sideStory) {
+        if (!e || !e.key || seen.has(e.key)) continue;
+        seen.add(e.key);
+        const cat = categorizeFranchiseEntry(e, 'sideStory');
+        (cat === 'season' ? seasons : specials).push({ entry: e, relation: 'sideStory' });
+      }
     }
-  });
-  // also include any entries in relEntries that are TV-ish and not yet included
-  for (const e of relEntries) {
-    if (!e || !e.key || seasonKeys.has(e.key)) continue;
-    const t = (e.type || '').toUpperCase();
-    if (t === 'MOVIE' || SPECIAL_TYPES.includes(t)) continue; // movies/specials handled separately
-    seasonKeys.add(e.key);
-    seasonMap.set(e.key, { entry: e, relation: 'related' });
+    /* All other relation buckets + unbucketed specials/movies → specials */
+    ['alternative', 'spinOff', 'spinoff', 'special', 'ova', 'ona', 'movie', 'summary', 'related', 'character', 'other', 'parent'].forEach(gk => {
+      if (gk === 'parent') return; // already in seasons
+      const entries = groups[gk];
+      if (!entries || !entries.length) return;
+      for (const e of entries) {
+        if (!e || !e.key || seen.has(e.key)) continue;
+        seen.add(e.key);
+        specials.push({ entry: e, relation: gk });
+      }
+    });
+    /* Any flat entries not yet seen */
+    for (const e of relEntries) {
+      if (!e || !e.key || seen.has(e.key)) continue;
+      seen.add(e.key);
+      const t = (e.type || '').toUpperCase();
+      if (t === 'TV') seasons.push({ entry: e, relation: 'related' });
+      else specials.push({ entry: e, relation: e.relation ? String(e.relation).toLowerCase() : 'related' });
+    }
+    /* Sort seasons by year */
+    seasons.sort((x, y) => (x.entry.year || 9999) - (y.entry.year || 9999));
+    specials.sort((x, y) => (x.entry.year || 9999) - (y.entry.year || 9999));
+    return { seasons, specials };
   }
 
-  const seasonList = Array.from(seasonMap.values());
-
-  // try to fetch watch-order for proper sorting
-  let orderedSeasons = seasonList;
+  /* Try the franchise graph first (resolves root, then walks full graph) */
+  let franchiseData = null;
   try {
-    const woData = await API.get('/api/watch-order/' + enc(a.slug || ''), 30 * 60000);
-    const woRows = (woData.related || []).slice().sort((x, y) => (x.order || 0) - (y.order || 0));
-    if (woRows.length) {
-      const orderMap = new Map();
-      woRows.forEach((r, i) => { if (r.key) orderMap.set(r.key, i); });
-      orderedSeasons = seasonList.slice().sort((a, b) => {
-        const oa = orderMap.has(a.entry.key) ? orderMap.get(a.entry.key) : 999;
-        const ob = orderMap.has(b.entry.key) ? orderMap.get(b.entry.key) : 999;
-        return oa - ob;
-      });
-    }
-  } catch (e) { /* no watch order — keep API order */ }
+    franchiseData = await Franchise.fullFranchise(a);
+  } catch (e) { franchiseData = null; }
 
-  if (orderedSeasons.length) {
-    const cards = orderedSeasons.map(({ entry, relation }) =>
-      animeCard(entry, { className: 'relcard', relBadge: GROUP_LABEL[relation] || relation })
+  let seasons = [];
+  let specials = [];
+  let watchOrder = [];
+
+  if (franchiseData && franchiseData.watchOrder && franchiseData.watchOrder.length) {
+    watchOrder = franchiseData.watchOrder;
+    /* Categorize the watch-order rows */
+    for (const r of watchOrder) {
+      if (!r || !r.key) continue;
+      const rel = String(r.relation || '').toLowerCase();
+      const cat = categorizeFranchiseEntry(r, rel);
+      if (cat === 'season') seasons.push({ entry: r, relation: rel });
+      else specials.push({ entry: r, relation: rel });
+    }
+    /* Mark self */
+    const selfKey = a.key;
+    seasons.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
+    specials.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
+  } else {
+    /* Fall back to local categorization */
+    const local = localCategorize();
+    seasons = local.seasons;
+    specials = local.specials;
+  }
+
+  /* Remove self duplicates (an entry can appear in watch-order both as 'self' and a bucket) */
+  const seenKeys = new Set();
+  const dedup = list => list.filter(({ entry }) => {
+    if (!entry || !entry.key) return false;
+    if (seenKeys.has(entry.key)) return false;
+    seenKeys.add(entry.key);
+    return true;
+  });
+  seasons = dedup(seasons);
+  specials = dedup(specials);
+
+  /* Sort: by releaseOrder (if from watch-order) else by year */
+  const sortByRelease = list => list.sort((x, y) => {
+    const rx = Number(x.entry.releaseOrder || x.entry.order || 0);
+    const ry = Number(y.entry.releaseOrder || y.entry.order || 0);
+    if (rx && ry && rx !== ry) return rx - ry;
+    return (x.entry.year || 9999) - (y.entry.year || 9999);
+  });
+  sortByRelease(seasons);
+  sortByRelease(specials);
+
+  if (seasons.length) {
+    const cards = seasons.map(({ entry, relation }) =>
+      animeCard(entry, { className: 'relcard', relBadge: relation === 'self' ? 'You are here' : (GROUP_LABEL[relation] || relation) })
     );
     secSeasons.fill(cards);
   }
-
-  // Movies derived from relEntries
-  const movies = [];
-  const seenMovie = new Set();
-  for (const e of relEntries) {
-    if (!e || !e.key || seenMovie.has(e.key)) continue;
-    if ((e.type || '').toUpperCase() === 'MOVIE') { movies.push(e); seenMovie.add(e.key); }
+  if (specials.length) {
+    const cards = specials.map(({ entry, relation }) =>
+      animeCard(entry, { className: 'relcard', relBadge: relation === 'self' ? 'You are here' : (GROUP_LABEL[relation] || relation) })
+    );
+    secSpecials.fill(cards);
   }
-  if (movies.length) secMovies.fill(movies.map(e => animeCard(e, { className: 'relcard' })));
 
-  // Watch order section (keep for reference, but it's now supplementary)
-  try {
-    const woData = await API.get('/api/watch-order/' + enc(a.slug || ''), 30 * 60000);
-    const rows = (woData.related || []).slice().sort((x, y) => (x.order || 0) - (y.order || 0));
-    if (rows.length && my === Router.seq) {
-      secWo.fill(h('div', { class: 'wolist' }, rows.map((r, i) => {
-        const isCur = r.key === a.key;
-        const row = h('div', { class: 'worow' + (isCur ? ' cur' : ''), tabindex: '0', role: 'link' },
-          h('span', { class: 'wo-n', text: String(r.order || i + 1) }),
-          imgOrPh(r.poster, 'wo-img', bestTitle(r), 'film'),
-          h('div', { class: 'wo-t' },
-            h('div', { class: 'wo-title', text: bestTitle(r) }),
-            h('div', { class: 'wo-meta' },
-              r.type ? h('span', { class: 'badge', text: r.type }) : null,
-              r.episodes ? h('span', { text: r.episodes === 1 ? '1 ep' : r.episodes + ' eps' }) : null,
-              r.relation ? h('span', { text: (GROUP_LABEL[r.relation] || String(r.relation)).toLowerCase() }) : null)),
-          isCur ? h('span', { class: 'wo-here', text: 'You are here' }) : null);
-        const openIt = () => go('#/anime/' + enc(r.key));
-        row.addEventListener('click', openIt);
-        row.addEventListener('keydown', e => { if (e.key === 'Enter') openIt(); });
-        return row;
-      })));
-    }
-  } catch (e) { }
+  /* ---- Watch order block (full franchise timeline with accurate "You are here") ---- */
+  if (watchOrder.length) {
+    const rows = watchOrder;
+    secWo.fill(h('div', { class: 'wolist' }, rows.map((r, i) => {
+      const isCur = r.key === a.key;
+      const rel = String(r.relation || '').toLowerCase();
+      const row = h('div', { class: 'worow' + (isCur ? ' cur' : ''), tabindex: '0', role: 'link' },
+        h('span', { class: 'wo-n', text: String(r.releaseOrder || r.order || i + 1) }),
+        imgOrPh(r.poster, 'wo-img', bestTitle(r), 'film'),
+        h('div', { class: 'wo-t' },
+          h('div', { class: 'wo-title', text: bestTitle(r) }),
+          h('div', { class: 'wo-meta' },
+            r.type ? h('span', { class: 'badge', text: r.type }) : null,
+            r.year ? h('span', { text: r.year }) : null,
+            r.episodes ? h('span', { text: r.episodes === 1 ? '1 ep' : r.episodes + ' eps' }) : null,
+            rel ? h('span', { text: (GROUP_LABEL[rel] || rel).toLowerCase() }) : null)),
+        isCur ? h('span', { class: 'wo-here', text: 'You are here' }) : null);
+      const openIt = () => go(routeFor(r));
+      row.addEventListener('click', openIt);
+      row.addEventListener('keydown', e => { if (e.key === 'Enter') openIt(); });
+      return row;
+    })));
+    /* Auto-scroll the "You are here" row into view */
+    requestAnimationFrame(() => {
+      const cur = $('.worow.cur', secWo.el);
+      if (cur) cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }
 
   /* ---- parallel enrichment ---- */
   const alive = () => my === Router.seq;
@@ -1546,10 +1927,11 @@ Views.details = async function (view, my, key) {
       secRecs.fill(recs.map(r => animeCard(r)));
     }).catch(() => { })
   ];
+  if (window.AOS) AOS.refresh();
 };
 </script>
 <script>
-/* ================= AniKuoshi — watch view + player ================= */
+/* ================= AniKuoshi v1.0 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -1625,6 +2007,9 @@ function createPlayer(box, ui) {
     tracks: [], rate: Store.settings.rate || 1,
     _justSwitched: false,
     _longPressTimer: 0, _longPressActive: false, _savedRate: 1,
+    /* Was the player fullscreen when an episode switch / server switch started?
+       Used to know whether to re-enter fullscreen after the new stream loads. */
+    _wasFullscreen: false,
     el: {}
   };
 
@@ -1634,20 +2019,18 @@ function createPlayer(box, ui) {
     P.video = h('video', { playsinline: true, 'webkit-playsinline': true, preload: 'auto', crossorigin: 'anonymous', style: 'display:none' });
     P.iframe = h('iframe', { allow: 'autoplay; fullscreen; encrypted-media; picture-in-picture', allowfullscreen: true, style: 'display:none' });
     dom.load = h('div', { class: 'pload' }, h('span', { class: 'dots dots--lg' }, h('i'), h('i'), h('i')), h('span', { class: 'pl-txt', text: 'Resolving stream' }));
-    // Center button uses a stable handler that toggles state
-const cpBtn = h('button', { class: 'cp-btn', 'aria-label': 'Play or pause' }, ic('play'));
-cpBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  togglePlay();
-});
-dom.center = h('div', { class: 'centerplay', style: 'display:none' }, cpBtn);
+    const cpBtn = h('button', { class: 'cp-btn', 'aria-label': 'Play or pause' }, ic('play'));
+    cpBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePlay();
+    });
+    dom.center = h('div', { class: 'centerplay', style: 'display:none' }, cpBtn);
     dom.ripL = h('div', { class: 'ripple' }, ic('prev'), h('span', { text: '10s' }));
     dom.ripR = h('div', { class: 'ripple' }, ic('next'), h('span', { text: '10s' }));
     dom.zoneL = h('div', { class: 'tapzone tapzone--l' }, dom.ripL);
     dom.zoneR = h('div', { class: 'tapzone tapzone--r' }, dom.ripR);
     dom.skip = h('button', { class: 'skipbtn' }, 'Skip Opening');
     dom.topTitle = h('div', { class: 'pt-title', text: '' });
-    // top-right cluster: cc, speed, pip, volume, fullscreen
     dom.topControls = h('div', { class: 'ptop-right', style: 'display:flex;align-items:center;gap:2px;margin-left:auto' },
       h('button', { class: 'pcbtn', 'aria-label': 'Subtitles' }, ic('cc')),
       h('button', { class: 'pcbtn', 'aria-label': 'Playback speed' }, ic('gauge')),
@@ -1676,7 +2059,6 @@ dom.center = h('div', { class: 'centerplay', style: 'display:none' }, cpBtn);
     box.append(P.video, P.iframe, dom.load, dom.center, dom.zoneL, dom.zoneR, dom.skip, dom.top, dom.ctl, dom.ccPop, dom.speedPop, dom.end, dom.err, dom.speedPill, h('div', { class: 'vign' }));
     P.el = dom;
     wire();
-    // wire top controls
     const topBtns = dom.topControls.querySelectorAll('.pcbtn');
     topBtns[0].addEventListener('click', () => togglePop(dom.ccPop));
     topBtns[1].addEventListener('click', () => togglePop(dom.speedPop));
@@ -1689,22 +2071,26 @@ dom.center = h('div', { class: 'centerplay', style: 'display:none' }, cpBtn);
     topBtns[3].addEventListener('click', () => { P.video.muted = !P.video.muted; });
     topBtns[4].addEventListener('click', () => {
       if (P.state.mode === 'embed') { toast('Use the embed player\u2019s own fullscreen button'); return; }
-      const target = box;
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
-        const exit = document.exitFullscreen || document.webkitExitFullscreen;
-        if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(() => { }); }
-        return;
-      }
-      const req = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
-      if (req) {
-        try { const r = req.call(target); if (r && r.catch) r.catch(err => { console.warn('Fullscreen:', err.message); }); }
-        catch (err) { console.warn('Fullscreen:', err.message); }
-      } else if (P.video && P.video.webkitEnterFullscreen) {
-        try { P.video.webkitEnterFullscreen(); } catch (err) { console.warn('Fullscreen:', err.message); }
-      } else {
-        toast('Fullscreen is unavailable');
-      }
+      toggleFullscreen();
     });
+  }
+
+  function toggleFullscreen() {
+    const target = box.parentElement; /* .player-wrap is the fullscreen element */
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(() => { }); }
+      return;
+    }
+    const req = target.requestFullscreen || target.webkitRequestFullscreen || target.msRequestFullscreen;
+    if (req) {
+      try { const r = req.call(target); if (r && r.catch) r.catch(err => { console.warn('Fullscreen:', err.message); }); }
+      catch (err) { console.warn('Fullscreen:', err.message); }
+    } else if (P.video && P.video.webkitEnterFullscreen) {
+      try { P.video.webkitEnterFullscreen(); } catch (err) { console.warn('Fullscreen:', err.message); }
+    } else {
+      toast('Fullscreen is unavailable');
+    }
   }
 
   const showLoad = txt => {
@@ -1761,7 +2147,6 @@ function syncCenter() {
       dom.skip.classList.remove('show');
     } else {
       dom.skip.classList.remove('show');
-      // auto-skip
       if (intro && intro.end > intro.start && v.currentTime >= intro.start && v.currentTime < intro.end - 0.3) {
         v.currentTime = intro.end;
       }
@@ -1771,6 +2156,13 @@ function syncCenter() {
       ui.onProgress(v.currentTime, v.duration, false);
     }
   }
+  /* showControls(show): shows or hides the bottom/top bars.
+     When hiding, also hides the center button. When showing, schedules auto-hide
+     if the video is currently playing (so controls fade out after a moment).
+     IMPORTANT: callers that fire on `playing` / `canplay` (i.e. coming back
+     from buffering) MUST NOT use show=true — they should call hideLoad() only
+     and let the existing auto-hide timer continue, otherwise controls would
+     pop up after every buffer event and ruin the immersive experience.       */
   function showControls(show) {
   if (P.state.mode === 'embed') {
     dom.ctl.classList.add('hide'); dom.top.classList.add('hide'); dom.center.style.display = 'none';
@@ -1779,7 +2171,7 @@ function syncCenter() {
   dom.ctl.classList.toggle('hide', !show);
   dom.top.classList.toggle('hide', !show);
   syncCenter();
-  scheduleHide();
+  if (show) scheduleHide();
 }
   function scheduleHide() {
   clearTimeout(P.controlsTimer);
@@ -1945,7 +2337,7 @@ function syncCenter() {
         });
         P.hls.loadSource(src);
         P.hls.attachMedia(P.video);
-        try { P.hls.subtitleTrack = -1; } catch (err) { } // never auto-show the stream's embedded subs
+        try { P.hls.subtitleTrack = -1; } catch (err) { }
         await new Promise(res => {
           const done = () => res();
           P.hls.once(Hls.Events.MANIFEST_PARSED, done);
@@ -1963,15 +2355,24 @@ function syncCenter() {
 
     attachSubtitles(subs, opts && opts.autoSub);
     armWatchdog();
-    showLoad('Starting playback');
+    /* Loading state remains until the first 'playing' event fires */
     if (opts.resumeAt) P.resumeAt = opts.resumeAt;
     const autoPlay = Store.getToggles().autoPlay;
     if (autoPlay) {
       const p = P.video.play();
-      if (p) p.then(() => { if (!P.destroyed) showControls(true); }).catch(() => {
+      if (p) p.then(() => {
+        if (P.destroyed) return;
+        /* IMPORTANT: do NOT call showControls(true) here.
+           Autoplay succeeded — hide loader, keep controls hidden,
+           let them appear on hover/tap.                                       */
+        hideLoad();
+        setPlayIcon(true);
+        dom.zoneL.classList.add('show'); dom.zoneR.classList.add('show');
+        scheduleHide();
+      }).catch(() => {
         if (P.destroyed) return;
         hideLoad();
-        showControls(true); // autoplay blocked: controls + center play button
+        showControls(true); // autoplay blocked: show controls + center play button
       });
     } else {
       hideLoad();
@@ -1988,9 +2389,6 @@ function syncCenter() {
       }
     } catch (e) { }
   }
-  /* Single entry point for subtitle selection — guarantees that exactly ONE
-     text track is ever in "showing" mode (ours OR the stream's own), so
-     subtitles can never double up in the direct player. */
   function selectSub(track) {
     if (P.video) {
       Array.from(P.video.textTracks || []).forEach(t => {
@@ -2002,10 +2400,6 @@ function syncCenter() {
     if (!track || idx >= 0) Store.setSettings({ subIdx: idx });
     buildCcMenu();
   }
-  /* Enforce the single-subtitle invariant: exactly ONE text track may be
-     "showing" — the current pick (ours) or none. The browser can auto-show a
-     language track without dispatching any event, and HLS/Safari can add
-     embedded tracks late; this squashes anything that is not the pick. */
   const enforceSingleSub = (skipMenu) => {
     if (P.destroyed || P.state.mode !== 'direct') return false;
     if (!P.tracks.length) { if (!skipMenu) buildCcMenu(); return false; }
@@ -2021,7 +2415,7 @@ function syncCenter() {
   };
   function attachSubtitles(subs, preferLabel) {
     $$('track', P.video).forEach(t => t.remove());
-    disableAllTracks(); // also kills any HLS-embedded tracks delivered by the stream
+    disableAllTracks();
     P.tracks = [];
     if (!subs.length) { buildCcMenu(); return; }
 
@@ -2031,8 +2425,6 @@ function syncCenter() {
       const label = sub.label || sub.language || ('Track ' + (i + 1));
       const abs = /^https?:\/\//i.test(sub.url) ? sub.url : API.abs(sub.url);
       const url = API_BASE + '/api/proxy/subtitle?url=' + enc(abs);
-      // NOTE: no `default` attribute — the mode is applied programmatically below,
-      // otherwise the browser can auto-show track 0 on top of our pick (double subs).
       const tr = h('track', { kind: 'subtitles', label: label, srclang: srclang, src: url });
       tr.setAttribute('data-idx', String(i));
       P.video.append(tr);
@@ -2046,12 +2438,8 @@ function syncCenter() {
     if (pick < 0 && P._subChoice !== -1) pick = 0;
     if (P._subChoice === -1) pick = -1;
 
-    // apply synchronously — no polling, so there is no race against late HLS tracks
     selectSub(pick < 0 ? null : P.tracks[pick].el.track);
 
-    // Guard poll: the browser's caption auto-selection can flip a track to
-    // "showing" without dispatching any event. Enforce the single-track
-    // invariant for the first seconds after attach, then stop.
     clearInterval(P._subGuard);
     let guardTries = 0;
     P._subGuard = setInterval(() => {
@@ -2075,18 +2463,33 @@ function syncCenter() {
         P._justSwitched = false;
       }
     });
-    v.addEventListener('loadeddata', () => { clearTimeout(P.watchdog); hideLoad();});
+    v.addEventListener('loadeddata', () => { clearTimeout(P.watchdog); });
+    /* 'playing' = playback actually started after buffering.
+       CRITICAL FIX: hideLoad() but do NOT showControls(true). The user's hover/tap
+       will reveal the controls. This stops the bars from flashing after every
+       buffer event, which was the original complaint.                                 */
     v.addEventListener('playing', () => {
       clearTimeout(P.watchdog); P.retryCount = 0;
       hideLoad();
-      setPlayIcon(true); showControls(true);
+      setPlayIcon(true);
       dom.zoneL.classList.add('show'); dom.zoneR.classList.add('show');
+      /* If we were fullscreen when the switch started and somehow lost it
+         (iOS), re-enter fullscreen. */
+      if (P._wasFullscreen && !document.fullscreenElement && !document.webkitFullscreenElement) {
+        try { toggleFullscreen(); } catch (e) { }
+      }
+      scheduleHide();
     });
     v.addEventListener('waiting', () => {
       if (P.state.mode === 'direct' && !P.destroyed) showLoad('');
     });
     v.addEventListener('canplay', () => {
-      if (P.state.mode === 'direct' && !P.destroyed && !v.paused) { hideLoad(); showControls(true); }
+      /* CRITICAL FIX: do NOT auto-show controls on canplay. Just hide the loader
+         (if playing) so the immersive experience is preserved.                       */
+      if (P.state.mode === 'direct' && !P.destroyed && !v.paused) {
+        hideLoad();
+        scheduleHide();
+      }
     });
     v.addEventListener('pause', () => {
       setPlayIcon(false);
@@ -2106,6 +2509,7 @@ function syncCenter() {
       const toggles = Store.getToggles();
       const hasNext = ui.hasNext();
       if (toggles.autoNext && hasNext) {
+        /* Auto-next: trigger in-place switch (keeps fullscreen) */
         ui.onNext();
       } else {
         dom.end.replaceChildren(...[
@@ -2142,14 +2546,14 @@ function syncCenter() {
       }
     };
     bar.addEventListener('pointerdown', e => {
-      try { bar.setPointerCapture(e.pointerId); } catch (err) { } // synthetic/untrusted events have no active pointer
+      try { bar.setPointerCapture(e.pointerId); } catch (err) { }
+      bar.classList.add('dragging');
       seekAt(e);
       const mv = ev => seekAt(ev);
-      const up = () => { bar.removeEventListener('pointermove', mv); bar.removeEventListener('pointerup', up); };
+      const up = () => { bar.classList.remove('dragging'); bar.removeEventListener('pointermove', mv); bar.removeEventListener('pointerup', up); };
       bar.addEventListener('pointermove', mv); bar.addEventListener('pointerup', up);
     });
 
-    // long-press for 2x speed
     let longPressTimer = 0;
     let longPressActive = false;
     const startLongPress = () => {
@@ -2181,12 +2585,10 @@ function syncCenter() {
     box.addEventListener('pointerleave', cancelLongPress);
     box.addEventListener('pointercancel', cancelLongPress);
 
-    // tap-to-seek + tap-to-toggle-controls
     box.addEventListener('pointerup', e => {
       if (P.state.mode !== 'direct' || P.destroyed) return;
       if (longPressActive) { cancelLongPress(); return; }
-      if (e.target.closest && e.target.closest('.cp-btn')) return; // center button handles its own click
-      // clicks on control surfaces never toggle (bars, buttons, popups, skip)
+      if (e.target.closest && e.target.closest('.cp-btn')) return;
       if (e.target.closest && (e.target.closest('.pctl') || e.target.closest('.ptop') || e.target.closest('.pcpop') || e.target.closest('.skipbtn'))) return;
 
       const isTouch = e.pointerType !== 'mouse';
@@ -2206,48 +2608,42 @@ function syncCenter() {
         setTimeout(() => {
           if (P.lastTap && now === P.lastTap) {
             P.lastTap = 0;
-            if (popsOpen) { closePops(); return; } // first tap just dismisses open menus
+            if (popsOpen) { closePops(); return; }
             showControls(dom.ctl.classList.contains('hide'));
           }
         }, 330);
         return;
       }
 
-      // Middle zone (or mouse click on the video): toggle controls
       if (isTouch || e.target === P.video || e.target === box || (e.target.classList && e.target.classList.contains('vign'))) {
-        if (popsOpen) { closePops(); return; } // first tap just dismisses open menus
+        if (popsOpen) { closePops(); return; }
         showControls(dom.ctl.classList.contains('hide'));
       }
     });
     box.addEventListener('dblclick', e => {
       if (P.state.mode !== 'direct') return;
       if (e.target === P.video || e.target === box || e.target.classList.contains('vign') || dom.zoneL.contains(e.target) || dom.zoneR.contains(e.target)) {
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          const exit = document.exitFullscreen || document.webkitExitFullscreen;
-          if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(() => { }); }
-        } else {
-          const req = box.requestFullscreen || box.webkitRequestFullscreen;
-          if (req) { try { const r = req.call(box); if (r && r.catch) r.catch(() => { }); } catch (err) { console.warn('Fullscreen:', err.message); } }
-        }
+        toggleFullscreen();
       }
     });
-    box.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' && P.state.mode === 'direct') showControls(true); });
-    // interacting with the bars re-arms the auto-hide timer
+    /* PC: reveal controls on mouse move */
+    box.addEventListener('pointermove', e => {
+      if (e.pointerType === 'mouse' && P.state.mode === 'direct' && !P.destroyed) {
+        if (dom.ctl.classList.contains('hide')) showControls(true);
+        else scheduleHide();
+      }
+    });
     [dom.ctl, dom.top].forEach(el => {
       el.addEventListener('pointerdown', () => { if (P.state.mode === 'direct' && !P.destroyed) showControls(true); });
       el.addEventListener('pointermove', () => { if (P.state.mode === 'direct' && !P.destroyed) showControls(true); });
     });
-    // popups swallow their own pointer events so scrolling them never dismisses the UI
     [dom.ccPop, dom.speedPop].forEach(el => el.addEventListener('pointerdown', e => { e.stopPropagation(); clearTimeout(P.controlsTimer); }));
-    // no long-press context menu over the video surface (mobile)
     box.addEventListener('contextmenu', e => {
       if (P.state.mode !== 'direct') return;
       if (e.target === P.video || e.target === box || (e.target.classList && e.target.classList.contains('vign'))) e.preventDefault();
     });
-    // tapping outside the player closes any open popup
     P._docDown = e => { if (!P.destroyed && !box.contains(e.target)) closePops(); };
     document.addEventListener('pointerdown', P._docDown);
-    // subtitle list events — re-enforce the single-track invariant on any change
     try {
       P.video.textTracks.addEventListener('addtrack', () => enforceSingleSub(false));
       P.video.textTracks.addEventListener('change', () => enforceSingleSub(false));
@@ -2258,7 +2654,6 @@ function syncCenter() {
 
   function buildCcMenu() {
     dom.ccPop.replaceChildren(h('div', { class: 'pop-hd', text: 'Subtitles' }));
-    // list our own tracks when we attached any; otherwise the stream's own (HLS)
     const mine = P.tracks.map(t => t.el.track);
     const list = mine.length ? mine : (P.video ? Array.from(P.video.textTracks) : []);
     const showingIdx = list.findIndex(t => t.mode === 'showing');
@@ -2278,7 +2673,7 @@ function syncCenter() {
       const label = t.label || t.language || t.srclang || ('Track ' + (i + 1));
       const it = h('div', { class: 'popitem' + (i === showingIdx ? ' sel' : '') }, ic('check'), label);
       it.addEventListener('click', () => {
-        selectSub(t); // exactly one track ends up "showing" — everything else is disabled
+        selectSub(t);
         dom.ccPop.classList.remove('open');
         scheduleHide();
       });
@@ -2320,6 +2715,9 @@ function syncCenter() {
       if (dom.btnNext) dom.btnNext.disabled = !hasNext;
     },
     cycleSubs,
+    isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    },
     open(key, ep, prov, type, resumeAt) {
       P.state.key = key; P.state.ep = ep; P.state.prov = prov || null; P.state.type = type || null;
       P.resumeAt = resumeAt || 0; P.resumed = false; P.retryCount = 0;
@@ -2334,12 +2732,34 @@ function syncCenter() {
         if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'resolve');
       });
     },
+    /* In-place episode switch: keeps the player DOM alive, preserves fullscreen.
+       The view layer is responsible for updating the URL silently via
+       Router.replaceHashSilent() before/after calling this.                        */
+    switchEpisode(key, ep, prov, type, resumeAt) {
+      P.state.key = key; P.state.ep = ep;
+      P.state.prov = prov || null; P.state.type = type || null;
+      P.resumeAt = resumeAt || 0;
+      P.resumed = false; P.retryCount = 0;
+      P._justSwitched = true;
+      P._wasFullscreen = this.isFullscreen();
+      dom.err.classList.remove('show');
+      dom.end.classList.remove('show');
+      showLoad('Loading next episode');
+      return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
+        if (P.destroyed) return;
+        load(entry, {});
+        return entry;
+      }).catch(e => {
+        if (!P.destroyed) { if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'switch'); }
+      });
+    },
     switchServer(prov, type, resumeAt) {
       P.state.prov = prov; P.state.type = type || null;
       if (P.video && P.state.mode === 'direct') P.lastDirectTime = P.video.currentTime || P.lastDirectTime;
       P.resumeAt = resumeAt != null ? resumeAt : (P.lastDirectTime || 0);
       P.retryCount = 0;
       P._justSwitched = true;
+      P._wasFullscreen = this.isFullscreen();
       dom.err.classList.remove('show');
       showLoad('Switching server');
       return WatchCore.resolve(P.state.key, P.state.ep, prov, type, { bypass: true }).then(entry => {
@@ -2384,11 +2804,11 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi — watch view ================= */
+/* ================= AniKuoshi v1.0 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
-  const ep = String(parseInt(epRaw, 10) || 1);
+  let ep = String(parseInt(epRaw, 10) || 1);
   const uiState = { anime: null, entry: null, episodes: [], epObj: null, title: '' };
 
   Header.sub('Loading', { search: true });
@@ -2403,20 +2823,8 @@ Views.watch = async function (view, my, key, epRaw) {
   const player = createPlayer(box, {
     title: () => uiState.title ? uiState.title + (uiState.anime && Number(uiState.anime.episodes) !== 1 ? ' \u00b7 EP ' + ep : '') : 'AniKuoshi',
     onBack: () => Router.back(),
-    onPrev: () => {
-      const p = epByOffset(-1);
-      if (p) {
-        Store.setSettings({ mode: player.state.mode });
-        go('#/watch/' + enc(key) + '/' + p.number);
-      }
-    },
-    onNext: () => {
-      const n = epByOffset(1);
-      if (n) {
-        Store.setSettings({ mode: player.state.mode });
-        go('#/watch/' + enc(key) + '/' + n.number);
-      }
-    },
+    onPrev: () => changeEpisode(epByOffset(-1)),
+    onNext: () => changeEpisode(epByOffset(1)),
     hasNext: () => !!epByOffset(1),
     hasPrev: () => !!epByOffset(-1),
     onServerPick: (prov, type) => {
@@ -2469,8 +2877,52 @@ Views.watch = async function (view, my, key, epRaw) {
     }
   }
 
+  /* ---------- in-place episode switch (preserves fullscreen, no re-render) ---------- */
+  function changeEpisode(target) {
+    if (!target) { toast('No next episode yet'); return; }
+    const newEp = String(target.number);
+    if (newEp === ep) return;
+    const oldEp = ep;
+    ep = newEp;
+    /* Update URL silently so hashchange doesn't trigger a full re-render */
+    const newHash = '#/watch/' + routeKey(uiState.anime || { slug: key, key: key }) + '/' + newEp;
+    Router.replaceHashSilent(newHash);
+    /* Save current progress before switching */
+    try {
+      const v = player.video();
+      if (v && v.currentTime) saveProgress(v.currentTime, v.duration || 0, true);
+    } catch (e) { }
+    /* Reload stream in same player (keeps fullscreen) */
+    const prog = Store.getProg(key, newEp);
+    const resumeAt = prog && prog.pos >= 20 && (!prog.dur || prog.pos < prog.dur * 0.96) ? prog.pos : 0;
+    uiState.epObj = uiState.episodes.find(e => Number(e.number) === Number(newEp)) || null;
+    const epName = (uiState.epObj && uiState.epObj.title) || ('Episode ' + newEp);
+    player.setTop(
+      uiState.title +
+      ((uiState.anime && ((uiState.anime.type || '').toUpperCase() === 'MOVIE' || Number(uiState.anime.episodes) === 1))
+        ? '' : ' \u00b7 Episode ' + newEp + ' \u00b7 ' + epName)
+    );
+    /* Update prev/next state */
+    btnPrevEp.disabled = !epByOffset(-1) || undefined;
+    btnNextEp.disabled = !epByOffset(1) || undefined;
+    player.setNav(!!epByOffset(-1), !!epByOffset(1));
+    /* Update current episode card highlight + scroll into view */
+    $$('.ep-card-sm', main).forEach(c => {
+      c.classList.toggle('cur', c.dataset.ep === newEp);
+    });
+    const curCard = $('.ep-card-sm.cur', main);
+    if (curCard) curCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    /* Update EP badge */
+    if (epBadgeEl && !isSingle) epBadgeEl.textContent = 'EP ' + newEp;
+    /* Reload the stream */
+    player.switchEpisode(key, newEp, Store.settings.prov || null, Store.settings.type || null, resumeAt).then(entry => {
+      if (entry && my === Router.seq) renderServers(entry);
+    });
+    document.title = (uiState.title ? uiState.title + ' \u00b7 EP ' + newEp + ' \u00b7 ' : '') + 'AniKuoshi';
+  }
+
   /* ---------- server + mode UI ---------- */
-  let srvBox = null, modeChips = null, chipDirect = null, chipEmbed = null;
+  let srvBox = null, modeChips = null, chipDirect = null, chipEmbed = null, epBadgeEl = null;
   function renderModeChips(force) {
     const entry = uiState.entry;
     if (!entry || !modeChips) return;
@@ -2540,17 +2992,11 @@ Views.watch = async function (view, my, key, epRaw) {
       case 'm': v.muted = !v.muted; break;
       case 'f': {
         if (player.state.mode === 'embed') break;
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          const exit = document.exitFullscreen || document.webkitExitFullscreen;
-          if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(() => { }); }
-        } else {
-          const req = player.box.requestFullscreen || player.box.webkitRequestFullscreen;
-          if (req) { try { const r = req.call(player.box); if (r && r.catch) r.catch(() => { }); } catch (err) { console.warn('Fullscreen:', err.message); } }
-        }
+        toggleFullscreenPub();
         break;
       }
-      case 'n': { const n = epByOffset(1); if (n) { Store.setSettings({ mode: player.state.mode }); go('#/watch/' + enc(key) + '/' + n.number); } break; }
-      case 'p': { const p = epByOffset(-1); if (p) { Store.setSettings({ mode: player.state.mode }); go('#/watch/' + enc(key) + '/' + p.number); } break; }
+      case 'n': { const n = epByOffset(1); if (n) changeEpisode(n); break; }
+      case 'p': { const p = epByOffset(-1); if (p) changeEpisode(p); break; }
       case 'c': player.cycleSubs(); break;
       case 'Escape': box.querySelectorAll('.pcpop.open').forEach(p => p.classList.remove('open')); break;
     }
@@ -2558,6 +3004,16 @@ Views.watch = async function (view, my, key, epRaw) {
   function seekPub(s) {
     const v = player.video(); if (!v) return;
     v.currentTime = Math.max(0, Math.min((v.duration || 1e9) - .5, v.currentTime + s));
+  }
+  function toggleFullscreenPub() {
+    const target = player.box.parentElement;
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) { const r = exit.call(document); if (r && r.catch) r.catch(() => { }); }
+    } else {
+      const req = target.requestFullscreen || target.webkitRequestFullscreen;
+      if (req) { try { const r = req.call(target); if (r && r.catch) r.catch(() => { }); } catch (err) { console.warn('Fullscreen:', err.message); } }
+    }
   }
   document.addEventListener('keydown', onKey);
 
@@ -2574,14 +3030,12 @@ Views.watch = async function (view, my, key, epRaw) {
   const entryPromise = player.open(key, ep, Store.settings.prov || null, Store.settings.type || null,
     (() => { const p = Store.getProg(key, ep); return p && p.pos >= 20 && (!p.dur || p.pos < p.dur * 0.96) ? p.pos : 0; })());
 
-  /* control rows under player */
   const isSingle = anime && ((anime.type || '').toUpperCase() === 'MOVIE' || Number(anime.episodes) === 1);
 
   chipDirect = h('button', { class: 'chip', onclick: () => player.setMode('direct') }, ic('play', 15), 'Direct');
   chipEmbed = h('button', { class: 'chip', onclick: () => player.setMode('embed') }, ic('ext', 15), 'Embed');
   modeChips = h('div', { class: 'modegrp' }, chipDirect, chipEmbed);
 
-  // toggles
   const togAutoNext = h('button', { class: 'toggle-chip' + (toggles.autoNext ? ' on' : '') }, ic('autonext', 14), 'Auto-next');
   const togAutoSkip = h('button', { class: 'toggle-chip' + (toggles.autoSkip ? ' on' : '') }, ic('skip', 14), 'Auto-skip');
   const togAutoPlay = h('button', { class: 'toggle-chip' + (toggles.autoPlay ? ' on' : '') }, ic('autoplay', 14), 'Auto-play');
@@ -2601,25 +3055,15 @@ Views.watch = async function (view, my, key, epRaw) {
     togAutoPlay.classList.toggle('on', v);
   });
 
-  const btnPrevEp = h('button', { class: 'btn btn--line', style: 'min-height:40px;padding:0 14px;font-size:13px', onclick: () => uiHandlersPrev() }, ic('prev', 16), 'Prev');
-  const btnNextEp = h('button', { class: 'btn btn--line', style: 'min-height:40px;padding:0 14px;font-size:13px', onclick: () => uiHandlersNext() }, 'Next', ic('next', 16));
-  function uiHandlersPrev() {
-    const p = epByOffset(-1);
-    if (p) { Store.setSettings({ mode: player.state.mode }); go('#/watch/' + enc(key) + '/' + p.number); }
-    else toast('No previous episode');
-  }
-  function uiHandlersNext() {
-    const n = epByOffset(1);
-    if (n) { Store.setSettings({ mode: player.state.mode }); go('#/watch/' + enc(key) + '/' + n.number); }
-    else toast('No next episode yet');
-  }
+  const btnPrevEp = h('button', { class: 'btn btn--line', style: 'min-height:40px;padding:0 14px;font-size:13px', onclick: () => changeEpisode(epByOffset(-1)) }, ic('prev', 16), 'Prev');
+  const btnNextEp = h('button', { class: 'btn btn--line', style: 'min-height:40px;padding:0 14px;font-size:13px', onclick: () => changeEpisode(epByOffset(1)) }, 'Next', ic('next', 16));
 
   srvBox = h('div', { class: 'wctl-row', style: 'display:block' });
   const toggleRow = h('div', { class: 'watch-toggles' }, togAutoNext, togAutoSkip, togAutoPlay);
+  epBadgeEl = h('span', { class: 'badge', text: 'EP ' + ep });
   const ctlWrap = h('div', null,
     h('div', { class: 'wctl-row' },
-      isSingle ? null : h('span', { class: 'badge', text: 'EP ' + ep }),
-      isSingle ? h('span', { class: 'badge badge--acc' }, ic('film', 12), ' Movie') : null,
+      isSingle ? h('span', { class: 'badge badge--acc' }, ic('film', 12), ' Movie') : epBadgeEl,
       h('span', { style: 'flex:1' }),
       isSingle ? null : btnPrevEp,
       isSingle ? null : btnNextEp,
@@ -2629,18 +3073,18 @@ Views.watch = async function (view, my, key, epRaw) {
 
   main.append(ctlWrap);
 
-  // keyboard hint
   const kbdHint = h('div', { class: 'kbd-hint', id: 'kbdHint' },
     ic('kbd', 14),
     h('span', null, h('span', { class: 'kbd', text: 'Space' }), ' play/pause'),
     h('span', null, h('span', { class: 'kbd', text: '\u2190\u2192' }), ' seek 5s'),
     h('span', null, h('span', { class: 'kbd', text: 'F' }), ' fullscreen'),
+    h('span', null, h('span', { class: 'kbd', text: 'N/P' }), ' next/prev (keeps fullscreen)'),
     h('span', null, h('span', { class: 'kbd', text: 'M' }), ' mute'),
     h('span', { class: 'dismiss', onclick: () => { localStorage.setItem('anikuoshi:kbdhint','1'); kbdHint.remove(); } }, 'Dismiss'));
   if (!localStorage.getItem('anikuoshi:kbdhint')) main.append(kbdHint);
 
   /* ---------- episodes (horizontal row) ---------- */
-  const epSec = h('section', { class: 'sec' },
+  const epSec = h('section', { class: 'sec', 'data-aos': 'fade-up' },
     h('h2', null, ic('tv'), 'Episodes', h('span', { class: 'sub', style: 'font-size:12px;color:var(--faint);font-weight:400;margin-left:auto', text: '' })),
     h('div', { class: 'ep-row' }));
   const epRow = $('.ep-row', epSec);
@@ -2651,7 +3095,7 @@ Views.watch = async function (view, my, key, epRaw) {
 
   let episodes = [];
   try {
-    const j = await API.get('/api/anime/episodes?key=' + enc(key), 5 * 60000);
+    const j = await API.get(episodesUrl(key), 5 * 60000);
     if (my !== Router.seq) return;
     episodes = (j.episodes || []).slice().sort((a, b) => Number(a.number) - Number(b.number));
   } catch (e) { episodes = []; }
@@ -2668,7 +3112,6 @@ Views.watch = async function (view, my, key, epRaw) {
   btnNextEp.disabled = !epByOffset(1) || undefined;
   player.setNav(!!epByOffset(-1), !!epByOffset(1));
 
-  // episode count in header (factual only)
   if (episodes.length) epCountEl.textContent = episodes.length + ' episodes';
 
   if (!isSingle) {
@@ -2688,13 +3131,13 @@ Views.watch = async function (view, my, key, epRaw) {
             finished ? h('span', { class: 'ep-finish', text: 'Finished' }) : null,
             h('div', { class: 'ep-prog', style: 'display:' + (pct && !finished ? '' : 'none') }, h('i', { style: 'width:' + pct + '%' }))),
           h('div', { class: 'epname', text: eo.title || 'Episode ' + eo.number }));
-        const openEp = () => go('#/watch/' + enc(key) + '/' + eo.number);
+        /* Episode card click: in-place switch (preserves fullscreen) */
+        const openEp = () => changeEpisode(eo);
         card.addEventListener('click', openEp);
         card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEp(); } });
         if (cur) currentCard = card;
         return card;
       }));
-      // auto-scroll current into view
       if (currentCard) {
         requestAnimationFrame(() => {
           currentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -2703,49 +3146,103 @@ Views.watch = async function (view, my, key, epRaw) {
     }
   }
 
-  /* ---------- Seasons / Specials row below episodes ---------- */
-  const seasonsSec = h('section', { class: 'sec', hidden: true }, h('h2', null, ic('map'), 'Seasons & specials'));
+  /* ---------- Seasons & Specials row (no "Related" — accurate ordering) ---------- */
+  const seasonsSec = h('section', { class: 'sec', hidden: true, 'data-aos': 'fade-up' }, h('h2', null, ic('tv'), 'Seasons & specials'));
   const seasonsRow = h('div', { class: 'hscroll season-row' });
   seasonsSec.append(seasonsRow);
   main.append(seasonsSec);
 
+  /* Build seasons + specials using franchise resolution (root-walk) */
+  let franchiseData = null;
   try {
-    const det = await API.get(animeUrl(key), 10 * 60000);
-    if (my === Router.seq) {
-      const relEntries = (det.relations && det.relations.entries) || [];
-      const groups = (det.relations && det.relations.groups) || {};
-      const seen = new Set();
-      const items = [];
-      // gather from groups in order
-      ['prequel', 'sequel', 'sideStory', 'related', 'parent', 'spinOff'].forEach(gk => {
-        const entries = groups[gk];
-        if (!entries || !entries.length) return;
-        for (const e of entries) {
+    if (anime) franchiseData = await Franchise.fullFranchise(anime);
+  } catch (e) { franchiseData = null; }
+
+  const renderSeasonsRow = async () => {
+    if (!anime) return;
+    let seasons = [];
+    let specials = [];
+    if (franchiseData && franchiseData.watchOrder && franchiseData.watchOrder.length) {
+      for (const r of franchiseData.watchOrder) {
+        if (!r || !r.key) continue;
+        const rel = String(r.relation || '').toLowerCase();
+        const cat = categorizeFranchiseEntry(r, rel);
+        if (cat === 'season') seasons.push({ entry: r, relation: rel });
+        else specials.push({ entry: r, relation: rel });
+      }
+      seasons.forEach(s => { if (s.entry.key === anime.key) s.relation = 'self'; });
+      specials.forEach(s => { if (s.entry.key === anime.key) s.relation = 'self'; });
+    } else {
+      /* Fallback: use direct relations */
+      const det = anime;
+      const relEntries = ((det && det.relations && det.relations.entries) || []);
+      /* When we only have anime (not full details), fetch relations */
+      let rels = (det && det.relations) || null;
+      if (!rels) {
+        try {
+          const d2 = await API.get(animeUrl(anime.key), 10 * 60000);
+          rels = d2.relations || null;
+        } catch (e) { rels = null; }
+      }
+      if (rels) {
+        const groups = rels.groups || {};
+        const seen = new Set();
+        ['prequel', 'sequel', 'parent'].forEach(gk => {
+          for (const e of (groups[gk] || [])) {
+            if (!e || !e.key || seen.has(e.key)) continue;
+            seen.add(e.key);
+            seasons.push({ entry: e, relation: gk });
+          }
+        });
+        for (const e of (groups.sideStory || [])) {
           if (!e || !e.key || seen.has(e.key)) continue;
           seen.add(e.key);
-          items.push({ entry: e, relation: gk });
+          const cat = categorizeFranchiseEntry(e, 'sideStory');
+          (cat === 'season' ? seasons : specials).push({ entry: e, relation: 'sideStory' });
         }
-      });
-      // also include specials from relEntries
-      for (const e of relEntries) {
-        if (!e || !e.key || seen.has(e.key)) continue;
-        const t = (e.type || '').toUpperCase();
-        if (SPECIAL_TYPES.includes(t)) {
+        ['alternative', 'spinOff', 'special', 'ova', 'ona', 'movie', 'summary', 'related', 'character', 'other'].forEach(gk => {
+          for (const e of (groups[gk] || [])) {
+            if (!e || !e.key || seen.has(e.key)) continue;
+            seen.add(e.key);
+            specials.push({ entry: e, relation: gk });
+          }
+        });
+        for (const e of relEntries) {
+          if (!e || !e.key || seen.has(e.key)) continue;
           seen.add(e.key);
-          items.push({ entry: e, relation: 'special' });
+          const t = (e.type || '').toUpperCase();
+          if (t === 'TV') seasons.push({ entry: e, relation: 'related' });
+          else specials.push({ entry: e, relation: 'related' });
         }
-      }
-      if (items.length) {
-        seasonsRow.replaceChildren(...items.map(({ entry, relation }) =>
-          animeCard(entry, { relBadge: GROUP_LABEL[relation] || relation })
-        ));
-        seasonsSec.hidden = false;
       }
     }
-  } catch (e) { /* silent */ }
+    /* Dedup */
+    const seen = new Set();
+    seasons = seasons.filter(s => { if (seen.has(s.entry.key)) return false; seen.add(s.entry.key); return true; });
+    specials = specials.filter(s => { if (seen.has(s.entry.key)) return false; seen.add(s.entry.key); return true; });
+    /* Sort by release order / year */
+    const sortByRelease = list => list.sort((x, y) => {
+      const rx = Number(x.entry.releaseOrder || x.entry.order || 0);
+      const ry = Number(y.entry.releaseOrder || y.entry.order || 0);
+      if (rx && ry && rx !== ry) return rx - ry;
+      return (x.entry.year || 9999) - (y.entry.year || 9999);
+    });
+    sortByRelease(seasons);
+    sortByRelease(specials);
+    /* Render seasons first, then specials (both in same row, seasons precede) */
+    const all = seasons.concat(specials);
+    if (all.length) {
+      seasonsRow.replaceChildren(...all.map(({ entry, relation }) =>
+        animeCard(entry, { relBadge: relation === 'self' ? 'You are here' : (GROUP_LABEL[relation] || relation) })
+      ));
+      seasonsSec.hidden = false;
+    }
+  };
+
+  await renderSeasonsRow();
 
   /* ---------- Recommendations row ---------- */
-  const recSec = h('section', { class: 'sec', hidden: true }, h('h2', null, ic('heart-list'), 'Recommendations'));
+  const recSec = h('section', { class: 'sec', hidden: true, 'data-aos': 'fade-up' }, h('h2', null, ic('heart-list'), 'Recommendations'));
   const recRow = h('div', { class: 'hscroll' });
   recSec.append(recRow);
   main.append(recSec);
@@ -2756,19 +3253,30 @@ Views.watch = async function (view, my, key, epRaw) {
     if (!recs.length) return;
     recRow.replaceChildren(...recs.map(r => animeCard(r)));
     recSec.hidden = false;
+    if (window.AOS) AOS.refresh();
   }).catch(() => { });
 
-  /* wire resolution result → server UI */
   entryPromise.then(entry => {
     if (!entry || my !== Router.seq) return;
     renderServers(entry);
   }).catch(() => { });
   document.title = (uiState.title ? uiState.title + ' \u00b7 EP ' + ep + ' \u00b7 ' : '') + 'AniKuoshi';
+  if (window.AOS) AOS.refresh();
 };
 
 /* ================= boot ================= */
 window.addEventListener('offline', () => toast('You are offline \u2014 cached pages still work'));
 window.addEventListener('online', () => toast('Back online'));
+Changelog.init();
+if (window.AOS) {
+  AOS.init({
+    duration: 600,
+    easing: 'ease-out-cubic',
+    once: true,
+    offset: 30,
+    delay: 0
+  });
+}
 Router.start();
 </script>
 </body>
