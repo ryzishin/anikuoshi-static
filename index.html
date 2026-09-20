@@ -40,14 +40,28 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 input{font:inherit}
 :focus{outline:none}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
-button:focus:not(:focus-visible),
-a:focus:not(:focus-visible),
-[tabindex]:focus:not(:focus-visible),
-.hcard:focus:not(:focus-visible),
-.ep-card-sm:focus:not(:focus-visible),
-.histrow:focus:not(:focus-visible),
-.worow:focus:not(:focus-visible),
-.sugg-item:focus:not(:focus-visible){outline:none}
+/* Mouse/touch input should NEVER produce a focus ring, even on tabindex=0
+   elements (which browsers heuristically mark as :focus-visible on click).
+   The .no-focus-ring class is toggled on <html> by InputModality.js below
+   whenever the last input was a pointer event, and removed on keydown.     */
+html.no-focus-ring :focus,
+html.no-focus-ring :focus-visible,
+html.no-focus-ring button:focus,
+html.no-focus-ring button:focus-visible,
+html.no-focus-ring a:focus,
+html.no-focus-ring a:focus-visible,
+html.no-focus-ring [tabindex]:focus,
+html.no-focus-ring [tabindex]:focus-visible,
+html.no-focus-ring .hcard:focus,
+html.no-focus-ring .hcard:focus-visible,
+html.no-focus-ring .ep-card-sm:focus,
+html.no-focus-ring .ep-card-sm:focus-visible,
+html.no-focus-ring .histrow:focus,
+html.no-focus-ring .histrow:focus-visible,
+html.no-focus-ring .worow:focus,
+html.no-focus-ring .worow:focus-visible,
+html.no-focus-ring .sugg-item:focus,
+html.no-focus-ring .sugg-item:focus-visible{outline:none}
 svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:#2c2417;border-radius:8px;border:2px solid var(--bg)}
@@ -1927,15 +1941,21 @@ const Suggest = {
     });
 
     input.addEventListener('keydown', e => {
-      if (!dropdown.classList.contains('open')) return;
-      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(items.length - 1, active + 1); markActive(); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(-1, active - 1); markActive(); }
-      else if (e.key === 'Enter') {
+      /* Enter and Escape fire regardless of whether the dropdown is open —
+         so the user doesn't have to wait for suggestions to load before
+         their Enter key actually triggers a search. Arrow keys still bail
+         when the dropdown is closed (they only make sense when there's a
+         list to navigate).                                                    */
+      if (e.key === 'Enter') {
         const q = (input.value || '').trim();
         if (active >= 0 && items[active]) { e.preventDefault(); pick(items[active]); }
         else if (q.length >= 2) { e.preventDefault(); close(); opts.onSubmit ? opts.onSubmit(q) : go('/search?q=' + enc(q)); }
+        return;
       }
-      else if (e.key === 'Escape') { close(); }
+      if (e.key === 'Escape') { close(); return; }
+      if (!dropdown.classList.contains('open')) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(items.length - 1, active + 1); markActive(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(-1, active - 1); markActive(); }
     });
 
     input.addEventListener('focus', () => { if (items.length) open(); });
@@ -2034,14 +2054,23 @@ Views.search = async function (view, my, q, page) {
   const root = h('div', { class: 'wrap' });
   const input = h('input', { type: 'search', value: q, placeholder: 'Search anime', 'aria-label': 'Search anime', autocomplete: 'off', spellcheck: 'false', enterkeyhint: 'search' });
   const sugg = h('div', { class: 'sugg', role: 'listbox' });
-  const bar = h('div', { class: 'searchbar', style: 'margin:16px 0 4px' }, ic('search'), input);
-  Suggest.attach(input, sugg, { onSubmit: nq => go('/search?q=' + enc(nq) + '&p=1') });
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      const v = (input.value || '').trim();
-      if (v.length >= 2 && !$('.sugg-item[data-active]', sugg)) go('/search?q=' + enc(v) + '&p=1');
-    }
-  });
+  /* Clear button + Search icon button — visible affordances so the user
+     can fire a search by tap/click without depending on suggestions loading. */
+  const clearBtn = h('button', { class: 'icbtn', 'aria-label': 'Clear search', style: 'display:none' }, ic('x'));
+  clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); clearBtn.style.display = 'none'; });
+  input.addEventListener('input', () => { clearBtn.style.display = input.value ? '' : 'none'; });
+  const searchBtn = h('button', { class: 'icbtn', 'aria-label': 'Search' }, ic('search'));
+  const submit = () => {
+    const v = (input.value || '').trim();
+    if (v.length >= 2) { go('/search?q=' + enc(v) + '&p=1'); input.blur(); }
+    else input.focus();
+  };
+  searchBtn.addEventListener('click', submit);
+  if (q) clearBtn.style.display = '';
+  const bar = h('div', { class: 'searchbar', style: 'margin:16px 0 4px' }, ic('search'), input, clearBtn, searchBtn);
+  /* Suggest.attach now handles Enter regardless of dropdown-open state,
+     so the search fires immediately on Enter — no waiting for suggestions.   */
+  Suggest.attach(input, sugg, { onSubmit: nq => { go('/search?q=' + enc(nq) + '&p=1'); input.blur(); } });
   /* Wrap bar+sugg in a .searchwrap so the overlay (absolute) is positioned
      relative to the bar AND inherits the high z-index (.searchwrap has z-index:80). */
   const searchWrap = h('div', { class: 'searchwrap' }, bar, sugg);
@@ -4353,6 +4382,40 @@ Views.watch = async function (view, my, key, epRaw) {
 };
 
 /* ================= boot ================= */
+/* ---------- Input modality tracker ----------
+   Browsers heuristically apply :focus-visible to tabindex=0 elements on
+   mouse click (treating them as "non-natively-focusable, maybe keyboard").
+   To guarantee NO focus ring appears on mouse/touch input, we toggle a
+   `no-focus-ring` class on <html> whenever the last input was a pointer
+   event, and remove it ONLY when the user presses Tab (real keyboard
+   navigation). Other keys (N/P/Space/J/L shortcuts, typing in inputs,
+   arrow keys in dropdowns, etc.) must NOT remove it — otherwise the ring
+   appears on the element that still has focus from the last click.       */
+(function () {
+  const html = document.documentElement;
+  let lastWasPointer = false;
+  const markPointer = () => {
+    if (!lastWasPointer) { html.classList.add('no-focus-ring'); lastWasPointer = true; }
+  };
+  const markKeyboard = (e) => {
+    /* ONLY Tab (with or without Shift) restores the focus ring.
+       Everything else — N/P/Space/J/L player shortcuts, arrow keys,
+       Enter/Space activation, typing in inputs — leaves the ring state
+       alone so it doesn't pop up on the still-focused element.             */
+    if (e.key !== 'Tab') return;
+    if (lastWasPointer) { html.classList.remove('no-focus-ring'); lastWasPointer = false; }
+  };
+  /* pointerdown covers mouse, touch, and pen. mousedown/touchstart are
+     fallbacks for browsers that don't fire pointerdown in some edge cases. */
+  window.addEventListener('pointerdown', markPointer, true);
+  window.addEventListener('mousedown', markPointer, true);
+  window.addEventListener('touchstart', markPointer, { passive: true, capture: true });
+  window.addEventListener('keydown', markKeyboard, true);
+  /* Start in "no-focus-ring" mode since the page just loaded via mouse
+     navigation in the vast majority of cases. The first Tab key will
+     restore the ring.                                                       */
+  html.classList.add('no-focus-ring');
+})();
 window.addEventListener('offline', () => toast('You are offline \u2014 cached pages still work'));
 window.addEventListener('online', () => toast('Back online'));
 applyTheme();           /* apply saved accent + title-lang before first paint */
