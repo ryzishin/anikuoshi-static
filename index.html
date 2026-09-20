@@ -40,6 +40,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 input{font:inherit}
 :focus{outline:none}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible),
+.hcard:focus:not(:focus-visible),
+.ep-card-sm:focus:not(:focus-visible),
+.histrow:focus:not(:focus-visible),
+.worow:focus:not(:focus-visible),
+.sugg-item:focus:not(:focus-visible){outline:none}
 svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:#2c2417;border-radius:8px;border:2px solid var(--bg)}
@@ -364,6 +372,10 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .pcbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--acc);width:0;transition:width .05s linear}
 .pcbar .knob{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:var(--acc);transform:translate(-50%,-50%) scale(0);box-shadow:0 1px 6px rgba(0,0,0,.5);transition:transform .15s var(--ease-spring)}
 .pcbar:hover .knob,.pcbar.dragging .knob{transform:translate(-50%,-50%) scale(1)}
+.pcbar-tip{position:absolute;bottom:calc(100% + 10px);transform:translateX(-50%);background:rgba(16,13,8,.96);border:1px solid var(--line2);border-radius:8px;padding:4px 8px;font-family:var(--mono);font-size:11px;color:var(--txt);pointer-events:none;opacity:0;transition:opacity .12s var(--ease);white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.5);z-index:12}
+.pcbar-tip.show{opacity:1}
+.pcbar-tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--line2)}
+.pcbar.dragging .track{height:8px}
 .pcrow{display:flex;align-items:center;gap:2px;margin-top:2px}
 .pcbtn{width:44px;height:42px;display:flex;align-items:center;justify-content:center;color:#eee;border-radius:11px;position:relative;flex:none;transition:color .15s var(--ease),background .15s var(--ease),transform .12s var(--ease)}
 .pcbtn:hover{color:#fff;background:rgba(255,255,255,.09)}
@@ -1194,7 +1206,7 @@ const Store = {
   upsertHist(entry) {
     const list = this.hist.filter(x => !(x.key === entry.key && Number(x.ep) === Number(entry.ep)));
     list.unshift(Object.assign({ at: Date.now() }, entry));
-    this.write('hist', list.slice(0, 80));
+    this.write('hist', list.slice(0, 300));
   },
   removeHist(key, ep) { this.write('hist', this.hist.filter(x => !(x.key === key && Number(x.ep) === Number(ep)))); },
   getProg(key, ep) { return this.read('prog', {})[key + '|' + ep] || null; },
@@ -1213,7 +1225,68 @@ function continueList() {
   for (const it of Store.hist) {
     if (!seen.has(it.key)) seen.set(it.key, it);
   }
-  return Array.from(seen.values()).filter(it => (it.pos || 0) >= 15 && (!it.dur || (it.pos || 0) < it.dur * 0.96)).slice(0, 14);
+  return Array.from(seen.values())
+    .filter(it => (it.pos || 0) >= 15 && (!it.dur || (it.pos || 0) < it.dur * 0.96))
+    .sort((a, b) => (b.at || 0) - (a.at || 0))
+    .slice(0, 14);
+}
+
+/* ---------- History grouping helpers (Task 1) ----------
+   Store.hist stays flat (it's the source of truth — Continue Watching uses it
+   directly and we don't want a migration). We derive grouping at render time
+   via historyGroups() and historyGroupSummary().
+
+   A "group" is one anime identified by its `key`. It collects every watched
+   episode entry, sorted by most-recent-watch first, plus a derived summary
+   (latest episode, total watched, total finished, headline + progress).    */
+function historyGroups() {
+  const map = new Map();
+  for (const it of Store.hist) {
+    if (!it || !it.key) continue;
+    if (!map.has(it.key)) map.set(it.key, { key: it.key, items: [] });
+    map.get(it.key).items.push(it);
+  }
+  const groups = Array.from(map.values());
+  for (const g of groups) {
+    g.items.sort((a, b) => (b.at || 0) - (a.at || 0));
+  }
+  /* Sort groups by their most-recent entry's `at` */
+  groups.sort((a, b) => (b.items[0].at || 0) - (a.items[0].at || 0));
+  return groups;
+}
+function historyGroupSummary(g) {
+  /* Latest entry is items[0] (already sorted). */
+  const latest = g.items[0];
+  const total = g.items.length;
+  const finished = g.items.filter(it => it.dur && it.pos >= it.dur * 0.96).length;
+  const pos = latest.pos || 0;
+  const dur = latest.dur || 0;
+  const pct = dur ? Math.min(100, Math.round((pos / dur) * 100)) : 0;
+  const latestFinished = pct >= 96;
+  /* Headline: "EP 3 · 12:34 · 2 finished" or "Finished 3 episodes" if all eps done */
+  let headline;
+  if (finished > 0 && finished === total) {
+    headline = 'Finished ' + total + (total === 1 ? ' episode' : ' episodes');
+  } else {
+    const parts = ['EP ' + latest.ep];
+    parts.push(latestFinished ? 'finished' : fmtTime(pos));
+    if (finished > 0) parts.push(finished + ' finished');
+    headline = parts.join(' · ');
+  }
+  /* Build a synthetic "entry" the row can use (so animeCard-like styling works) */
+  const entry = {
+    key: g.key,
+    slug: latest.slug,
+    title: latest.title,
+    titleRomaji: latest.titleRomaji || latest.title,
+    titleEnglish: latest.titleEnglish || '',
+    titleNative: latest.titleNative || '',
+    poster: latest.poster,
+    thumb: latest.thumb,
+    type: latest.type,
+    year: latest.year
+  };
+  return { latest, total, finished, pos, dur, pct, latestFinished, headline, entry };
 }
 
 /* ---------- theme + title-language application ----------
@@ -1308,8 +1381,26 @@ function imgOrPh(src, cls, alt, iconName, opts) {
 function prefetchDetails(key) {
   API.get(animeUrl(key), 10 * 60000).catch(() => { });
 }
+/* Normalize entry titles so every card / suggestion / watch-order row uses
+   the same field names regardless of where the data came from.
+   The Recommendations API and similar endpoints sometimes return only `title`
+   (romaji) and `title_english` / `english` / `native` / `title_native` in
+   inconsistent fields. Without normalization, titleMain()/titleSub() never
+   see the English/native titles and fall back to romaji. */
+function normalizeEntry(it) {
+  if (!it) return it;
+  if (Array.isArray(it)) return it.map(normalizeEntry);
+  return Object.assign({}, it, {
+    titleRomaji:  it.titleRomaji  || it.romaji  || it.title || '',
+    titleEnglish: it.titleEnglish || it.english || it.title_english || '',
+    titleNative:  it.titleNative  || it.native  || it.title_native  || '',
+    poster:       it.poster || it.image || it.cover || it.thumbnail || '',
+    key:          it.key || it.slug || ''
+  });
+}
 function animeCard(entry, opts) {
   opts = opts || {};
+  entry = normalizeEntry(entry);
   const key = entry.key;
   const sub = titleSub(entry);
   const card = h('div', { class: 'hcard' + (opts.className ? ' ' + opts.className : ''), dataset: { key: key, hasSub: sub ? '1' : '0' }, tabindex: '0', role: 'link', 'aria-label': bestTitle(entry) },
@@ -1505,49 +1596,50 @@ const Changelog = {
     this.modal = $('#changelogModal');
     this.body = $('#clBody');
     this.body.replaceChildren(
+      /* ---------- Hero ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('spark', 14), 'AniKuoshi v1.0.0', h('span', { class: 'n', text: 'Initial public release' })),
-        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'A clean, fast way to search, discover, and stream anime. Built on APIKuoshi, mobile-first, no AI slop.' }),
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'A clean, fast way to search, discover, and stream anime. Built on APIKuoshi. Mobile-first.' })
+      ),
+
+      /* ---------- Core features ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('play', 14), 'Core features'),
         h('ul', { class: 'cl-list' },
-          h('li', null, h('span', null, h('b', null, 'Franchise-aware Seasons & Specials.'), ' Details and Watch pages resolve to the franchise root (following PREQUEL relations) and split entries into a chronological Seasons list and a Specials bucket (movies, OVAs, ONAs, side stories, alternatives). Franchise graph always uses the canonical ', h('code', null, 'anilist:<id>'), ' key, never the listing slug — so Hello World actually shows Hello World.')),
-          h('li', null, h('span', null, h('b', null, 'Accurate watch order.'), ' Uses ', h('code', null, '/api/watch-order'), ' sorted by release year, with a pulsing "You are here" indicator pinned to the current anime.')),
-          h('li', null, h('span', null, h('b', null, 'Removed redundant Related row'), ' on the watch page — Seasons & Specials cover it.')),
-          h('li', null, h('span', null, h('b', null, 'Player: controls don\'t pop up after buffering.'), ' Loading overlay hides cleanly; controls stay hidden until you move the mouse (PC) or tap the video (mobile).')),
-          h('li', null, h('span', null, h('b', null, 'Episode switching never breaks fullscreen.'), ' Next / Prev / Auto-next / episode-card clicks reload the stream in place — the fullscreen element stays mounted. URL updates silently via ', h('code', null, 'history.replaceState'), '.')),
-          h('li', null, h('span', null, h('b', null, 'Resume prompt on episode switch.'), ' Switching episodes checks saved progress and asks "Continue from 4:32 or Start fresh?" — no more carrying over the previous episode\'s timestamp. Works in both Direct and Embed modes.')),
-          h('li', null, h('span', null, h('b', null, 'Skip Outro.'), ' Companion to Skip Opening — auto-skips when Auto-skip is on, shows a button when it\'s off. Press ', h('b', null, 'Enter'), ' to trigger whichever skip button is currently visible.')),
-          h('li', null, h('span', null, h('b', null, 'Configurable Shift+Enter skip.'), ' Jumps a configurable number of seconds (default 85, editable in Settings) — like a YouTube "skip ads" shortcut.')),
-          h('li', null, h('span', null, h('b', null, 'Finer keyboard seeking.'), ' J/K/L = ±10s, arrows = ±5s, ', h('code', null, ','), '/', h('code', null, '.'), ' = frame step, 0-9 = jump to N×10%, Shift+arrows = ±60s.')),
-          h('li', null, h('span', null, h('b', null, 'Auto-next countdown.'), ' Netflix-style "UP NEXT: Episode 3" pill appears 15s before the current episode ends, with a countdown ring and a cancel button.')),
-          h('li', null, h('span', null, h('b', null, 'Server health indicator.'), ' Server chips show a green dot for probed-best streams, a red dot for failed probes — informed switching.')),
-          h('li', null, h('span', null, h('b', null, 'Buffered ranges visualization.'), ' Seekbar shows multiple buffered stripes (HLS chunks) instead of a single bar — see exactly what\'s cached ahead.')),
-          h('li', null, h('span', null, h('b', null, 'Title language toggle.'), ' Settings → Titles: English + Romaji subtitle / English only / Romaji only / Native only. Affects every card, suggestion, watch-order row, and header title.')),
-          h('li', null, h('span', null, h('b', null, 'Appearance settings.'), ' Six accent presets (Amber, Sage, Sky, Coral, Lavender) + custom hex picker. Accent applies everywhere — including Direct player controls.')),
-          h('li', null, h('span', null, h('b', null, 'Subtitle styling.'), ' Settings → Subtitles: cue text size (12-36px) and background opacity (0-100%) sliders. Direct player only.')),
-          h('li', null, h('span', null, h('b', null, 'Clean History-API routing.'), ' No more ', h('code', null, '#'), ' in URLs. Routes look like ', h('code', null, '/anime/anilist:106240'), ' and ', h('code', null, '/watch/anilist:9253/2'), '. Direct URL access and refresh work via ', h('code', null, 'vercel.json'), ' SPA rewrite.')),
-          h('li', null, h('span', null, h('b', null, 'Suggestions overlay fixed.'), ' Overlay height is computed per-open against the live viewport; never spills past the bottom. Keyboard hint hidden on touch / small screens. Stacks above Continue-watching and Favorites shelves.')),
-          h('li', null, h('span', null, h('b', null, 'Clear cache button.'), ' Settings → Data: wipes favorites, history, progress, and settings; reloads the page.')),
-          h('li', null, h('span', null, h('b', null, 'Smooth animations & AOS.'), ' Subtle entrance animations on cards/sections, smoother control transitions, hover lift on posters, modal pop with spring easing.')),
-          h('li', null, h('span', null, h('b', null, 'Mobile-first polish.'), ' Tighter tap targets, swipeable shelves, safe-area-aware fullscreen controls, landscape phone player fix, dynamic seekbar height.')),
-          h('li', null, h('span', null, h('b', null, 'Design language: "not so AI."'), ' Espresso-black + amber palette, hand-tuned radii, real shadows, custom keyframe loaders, no purple gradients, no glassmorphism overload.'))
+          h('li', null, h('span', null, h('b', null, 'Search & discovery.'), ' Live suggestions as you type, fuzzy keyword search, favorites, continue watching, and per-anime recommendations on every details and watch page.')),
+          h('li', null, h('span', null, h('b', null, 'Franchise-aware details.'), ' Seasons and Specials are split into separate buckets, the franchise root is resolved by walking PREQUEL relations up to the source, and the watch order is sorted by release year with a pulsing "You are here" indicator on the current anime.')),
+          h('li', null, h('span', null, h('b', null, 'The player.'), ' Direct (HLS) and Embed modes, server chips with probed health indicators, a multi-stripe buffered-range seekbar, a subtitle picker, a speed menu, picture-in-picture, and fullscreen.')),
+          h('li', null, h('span', null, h('b', null, 'Watch experience.'), ' A resume prompt per episode, Skip Opening and Skip Outro (manual or auto), a Netflix-style auto-next countdown, auto-play, and auto-skip toggles for openings and endings.')),
+          h('li', null, h('span', null, h('b', null, 'Keyboard-first control.'), ' Space/K, J/L, arrows, 0-9, Enter, Shift+Enter, N/P, C, F, M — the entire player is drivable from the keyboard.')),
+          h('li', null, h('span', null, h('b', null, 'Personalization.'), ' Title language (English+Romaji / English / Romaji / Native), five accent presets plus a custom hex picker, subtitle size and background sliders, and a configurable Shift+Enter skip duration.')),
+          h('li', null, h('span', null, h('b', null, 'Library.'), ' A favorites grid and a grouped history view that drills into per-anime episode lists with progress bars everywhere.')),
+          h('li', null, h('span', null, h('b', null, 'Design.'), ' Espresso-black and amber, hand-tuned radii, real shadows, custom keyframe loaders, no purple gradients, no glassmorphism overload.'))
         )
       ),
+
+      /* ---------- Keyboard shortcuts ---------- */
       h('div', { class: 'cl-section' },
-        h('h3', null, ic('kbd', 14), 'Keyboard shortcuts', h('span', { class: 'n', text: 'while watching' })),
+        h('h3', null, ic('kbd', 14), 'Keyboard shortcuts', h('span', { class: 'n', text: 'everything is one key away' })),
         h('ul', { class: 'cl-list' },
           h('li', null, h('span', null, h('b', null, 'Space / K'), ' — play or pause')),
-          h('li', null, h('span', null, h('b', null, 'J / L'), ' — seek -10s / +10s'),
+          h('li', null, h('span', null, h('b', null, 'J / L'), ' — seek -10s / +10s',
             ',  ', h('b', null, '\u2190 / \u2192'), ' — seek -5s / +5s',
-            ',  ', h('b', null, 'Shift+\u2190 / Shift+\u2192'), ' — seek -60s / +60s'),
+            ',  ', h('b', null, 'Shift+\u2190 / Shift+\u2192'), ' — seek -60s / +60s')),
           h('li', null, h('span', null, h('b', null, ', / .'), ' — frame-step backward / forward')),
           h('li', null, h('span', null, h('b', null, '0-9'), ' — jump to 0%, 10%, 20%, ... 90% of the video')),
           h('li', null, h('span', null, h('b', null, 'Enter'), ' — trigger the visible Skip Opening / Skip Outro button (like YouTube\'s skip ads)')),
           h('li', null, h('span', null, h('b', null, 'Shift+Enter'), ' — skip forward by the configured duration (default 85s, change in Settings)')),
           h('li', null, h('span', null, h('b', null, '\u2191 / \u2193'), ' — volume up / down,  ', h('b', null, 'M'), ' — mute')),
           h('li', null, h('span', null, h('b', null, 'F'), ' — toggle fullscreen,  ', h('b', null, 'C'), ' — cycle subtitle tracks')),
-          h('li', null, h('span', null, h('b', null, 'N / P'), ' — next / previous episode (keeps fullscreen, prompts to resume)')),
+          h('li', null, h('span', null, h('b', null, 'N / P'), ' — next / previous episode (keeps fullscreen, prompts to resume; works in Embed mode too)')),
           h('li', null, h('span', null, h('b', null, 'Esc'), ' — close popups'))
         )
+      ),
+
+      /* ---------- Credits ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('info', 14), 'Credits'),
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.0 · RYZISHIN. Streaming metadata and playback provided by <a href="https://apikuoshi-v2.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
       )
     );
     $('#clClose').addEventListener('click', () => Changelog.close());
@@ -1726,14 +1818,18 @@ const Suggest = {
     if (!it) return null;
     const key = it.key || it.slug || it.animeKey || it.id || '';
     if (!key) return null;
+    /* Fold in normalizeEntry so any title_* / english / native / title_english
+       variants the API returns are mapped to the canonical field names
+       titleMain()/titleSub() expect. */
+    const n = normalizeEntry(it);
     return {
       key,
       slug: it.slug || key,
-      title: it.title || it.name || it.titleRomaji || '',
-      titleRomaji: it.titleRomaji || it.title || it.name || '',
-      titleEnglish: it.titleEnglish || '',
-      titleNative: it.titleNative || '',
-      poster: it.poster || it.image || it.thumbnail || '',
+      title: n.titleRomaji || it.title || it.name || '',
+      titleRomaji: n.titleRomaji,
+      titleEnglish: n.titleEnglish,
+      titleNative: n.titleNative,
+      poster: n.poster || it.image || it.thumbnail || '',
       type: it.type || '',
       year: it.year || '',
       episodes: it.episodes || it.totalEpisodes || 0,
@@ -1852,6 +1948,7 @@ const Suggest = {
 
 /* ---------- home ---------- */
 function cwCard(entry) {
+  entry = normalizeEntry(entry);
   const pct = entry.dur ? Math.min(100, Math.round((entry.pos / entry.dur) * 100)) : 0;
   const card = h('div', { class: 'hcard', tabindex: '0', role: 'link', 'aria-label': 'Continue ' + bestTitle(entry) + ' episode ' + entry.ep,
     'data-aos': 'fade-up' },
@@ -1996,11 +2093,135 @@ function fmtAgo(ts) {
   if (d < 86400e3) return Math.round(d / 3600e3) + ' h ago';
   return Math.round(d / 86400e3) + ' d ago';
 }
+
+/* Level 1 — Library → History tab: one row per anime (grouped by key),
+   sorted by most recent watch activity.                                   */
+function renderHistoryGroupsList(body) {
+  const groups = historyGroups();
+  if (!groups.length) {
+    body.append(emptyState('history', 'Nothing watched yet', 'Episodes you watch will show up here so you can pick up where you left off.'));
+    return;
+  }
+  for (const g of groups) {
+    const s = historyGroupSummary(g);
+    const row = h('div', { class: 'histrow', tabindex: '0', role: 'link', 'data-aos': 'fade-up', 'aria-label': s.entry.title + ' — ' + s.headline },
+      imgOrPh(s.latest.thumb || s.entry.poster, 'hr-img', bestTitle(s.entry), 'film'),
+      h('div', { class: 'hr-t' },
+        h('div', { class: 'hr-title', text: bestTitle(s.entry) }),
+        h('div', { class: 'hr-sub', text: s.headline + ' · ' + fmtAgo(s.latest.at) }),
+        h('div', { class: 'hr-prog' }, h('i', { style: 'width:' + s.pct + '%' }))
+      ),
+      h('span', { class: 'badge badge--acc', style: 'flex:none;align-self:center', text: s.total + (s.total === 1 ? ' ep' : ' eps') }),
+      h('button', { class: 'icbtn hr-x', 'aria-label': 'Clear all history for ' + bestTitle(s.entry) }, ic('x'))
+    );
+    const goDrill = () => go('/library?tab=hist&key=' + enc(g.key));
+    row.addEventListener('click', goDrill);
+    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goDrill(); } });
+    $('.hr-x', row).addEventListener('click', e => {
+      e.stopPropagation();
+      if (!confirm('Clear ALL history for "' + bestTitle(s.entry) + '"? (' + s.total + (s.total === 1 ? ' episode' : ' episodes') + ')')) return;
+      const list = Store.hist.filter(x => x.key !== g.key);
+      Store.write('hist', list);
+      toast('Cleared ' + s.total + (s.total === 1 ? ' entry' : ' entries'));
+      row.remove();
+      if (!Store.hist.length) {
+        body.replaceChildren();
+        body.append(emptyState('history', 'Nothing watched yet', 'Episodes you watch will show up here so you can pick up where you left off.'));
+      }
+    });
+    body.append(row);
+  }
+}
+
+/* Level 2 — Drill-down for a single anime. Shows every watched episode,
+   newest first. Header card with poster, title, count, and Details / Resume /
+   Clear buttons. Below: per-episode rows with their own progress bar + X.     */
+function renderHistoryGroupDrill(body, animeKey) {
+  const all = Store.hist.filter(x => x.key === animeKey).sort((a, b) => (b.at || 0) - (a.at || 0));
+  if (!all.length) {
+    body.append(emptyState('history', 'No history for this anime', 'This entry has been cleared or never watched.',
+      h('button', { class: 'btn btn--line', onclick: () => go('/library?tab=hist') }, ic('back'), 'Back to history')));
+    return;
+  }
+  /* Build synthetic entry from the latest watched episode (so titles normalize correctly). */
+  const latest = all[0];
+  const entry = normalizeEntry({
+    key: latest.key,
+    slug: latest.slug,
+    title: latest.title,
+    titleRomaji: latest.titleRomaji,
+    titleEnglish: latest.titleEnglish,
+    titleNative: latest.titleNative,
+    poster: latest.poster,
+    type: latest.type,
+    year: latest.year
+  });
+  const finished = all.filter(it => it.dur && it.pos >= it.dur * 0.96).length;
+  /* ---- Header card ---- */
+  const headerCard = h('div', { class: 'dhead', style: 'display:flex;gap:14px;align-items:flex-end;margin:10px 0 14px' },
+    h('div', { class: 'dposter', style: 'width:96px' }, imgOrPh(latest.poster, '', bestTitle(entry), 'film', { eager: true, width: 96, height: 144 })),
+    h('div', { class: 'dinfo', style: 'flex:1;min-width:0;padding-bottom:2px' },
+      h('h2', { style: 'margin:0;font-size:18px;font-weight:750;line-height:1.25', text: bestTitle(entry) }),
+      h('p', { style: 'margin:6px 0 0;font-size:13px;color:var(--dim)', text: all.length + (all.length === 1 ? ' episode' : ' episodes') + ' watched · ' + finished + ' finished' }),
+      h('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:12px' },
+        h('button', { class: 'btn btn--line', style: 'min-height:38px;padding:0 14px;font-size:13px', onclick: () => go(routeFor(entry)) }, ic('info', 16), 'Details'),
+        h('button', { class: 'btn btn--acc', style: 'min-height:38px;padding:0 14px;font-size:13px', onclick: () => {
+          /* Resume latest-watched (or first if latest is finished) episode */
+          const target = all.find(it => !(it.dur && it.pos >= it.dur * 0.96)) || latest;
+          go(watchRouteFor(entry, target.ep));
+        } }, ic('play', 16), 'Resume EP ' + latest.ep),
+        h('button', { class: 'btn btn--danger', style: 'min-height:38px;padding:0 14px;font-size:13px', onclick: () => {
+          if (!confirm('Clear ALL history for "' + bestTitle(entry) + '"?')) return;
+          Store.write('hist', Store.hist.filter(x => x.key !== animeKey));
+          toast('Cleared history for ' + bestTitle(entry));
+          go('/library?tab=hist');
+        } }, ic('trash', 16), 'Clear')
+      )
+    )
+  );
+  body.append(headerCard);
+
+  /* ---- Back link ---- */
+  body.append(h('button', { class: 'btn btn--ghost', style: 'min-height:34px;padding:0 10px;font-size:12px;margin-bottom:8px', onclick: () => go('/library?tab=hist') }, ic('back', 14), 'All history'));
+
+  /* ---- Per-episode rows (newest first) ---- */
+  for (const it of all) {
+    const pct = it.dur ? Math.min(100, Math.round((it.pos / it.dur) * 100)) : 0;
+    const isFinished = pct >= 96;
+    const row = h('div', { class: 'histrow', tabindex: '0', role: 'link', 'data-aos': 'fade-up' },
+      imgOrPh(it.thumb || it.poster, 'hr-img', bestTitle(entry) + ' EP ' + it.ep, 'film'),
+      h('div', { class: 'hr-t' },
+        h('div', { class: 'hr-title', text: 'EP ' + it.ep + (it.epTitle ? ' · ' + it.epTitle : '') }),
+        h('div', { class: 'hr-sub', text: (isFinished ? 'finished' : fmtTime(it.pos) + ' watched') + ' · ' + fmtAgo(it.at) }),
+        h('div', { class: 'hr-prog' }, h('i', { style: 'width:' + pct + '%' }))
+      ),
+      h('button', { class: 'icbtn hr-x', 'aria-label': 'Remove EP ' + it.ep + ' from history' }, ic('x'))
+    );
+    row.addEventListener('click', () => go(watchRouteFor(entry, it.ep)));
+    row.addEventListener('keydown', e => { if (e.key === 'Enter') go(watchRouteFor(entry, it.ep)); });
+    $('.hr-x', row).addEventListener('click', e => {
+      e.stopPropagation();
+      Store.removeHist(it.key, it.ep);
+      row.remove();
+      toast('Removed EP ' + it.ep + ' from history');
+      /* If the last entry was deleted, bounce back to Level 1 */
+      if (!Store.hist.filter(x => x.key === animeKey).length) {
+        go('/library?tab=hist');
+      }
+    });
+    body.append(row);
+  }
+}
+
 Views.library = async function (view, my, tab) {
   Header.sub('Library', { search: true });
+  /* Level 2 (drill-down) when both tab=hist and a key param are present */
+  const drillKey = (tab === 'hist') ? (Router.parse().query.get('key') || '') : '';
   const root = h('div', { class: 'wrap' });
-  const favTab = h('button', { class: 'tab' + (tab !== 'hist' ? ' on' : '') }, ic('star'), 'Favorites');
-  const histTab = h('button', { class: 'tab' + (tab === 'hist' ? ' on' : '') }, ic('history'), 'History');
+  /* Tabs: while drilling in, switch back to History tab highlight */
+  const onHist = tab === 'hist';
+  const favTab = h('button', { class: 'tab' + (!onHist ? ' on' : '') }, ic('star'), 'Favorites');
+  const histTab = h('button', { class: 'tab' + (onHist ? ' on' : '') }, ic('history'), 'History');
   favTab.addEventListener('click', () => go('/library?tab=fav'));
   histTab.addEventListener('click', () => go('/library?tab=hist'));
   root.append(h('div', { class: 'tabs' }, favTab, histTab));
@@ -2009,6 +2230,7 @@ Views.library = async function (view, my, tab) {
   view.replaceChildren(root);
 
   if (tab !== 'hist') {
+    /* Favorites tab — unchanged */
     const favs = Store.favs;
     if (!favs.length) {
       body.append(emptyState('star', 'No favorites yet', 'Tap the star on any title to keep it here for quick access.',
@@ -2031,33 +2253,12 @@ Views.library = async function (view, my, tab) {
       }
       body.append(grid);
     }
+  } else if (drillKey) {
+    /* Level 2 — drill-down for one anime */
+    renderHistoryGroupDrill(body, drillKey);
   } else {
-    const hist = Store.hist;
-    if (!hist.length) {
-      body.append(emptyState('history', 'Nothing watched yet', 'Episodes you watch will show up here so you can pick up where you left off.'));
-    } else {
-      for (const it of hist) {
-        const pct = it.dur ? Math.min(100, Math.round((it.pos / it.dur) * 100)) : 0;
-        const row = h('div', { class: 'histrow', tabindex: '0', role: 'link', 'data-aos': 'fade-up' },
-          imgOrPh(it.thumb || it.poster, 'hr-img', bestTitle(it), 'film'),
-          h('div', { class: 'hr-t' },
-            h('div', { class: 'hr-title', text: bestTitle(it) }),
-            h('div', { class: 'hr-sub', text: 'EP ' + it.ep + (it.epTitle ? ' \u00b7 ' + it.epTitle : '') + ' \u00b7 ' + (pct >= 96 ? 'finished' : fmtTime(it.pos) + ' watched') + ' \u00b7 ' + fmtAgo(it.at) }),
-            h('div', { class: 'hr-prog' }, h('i', { style: 'width:' + pct + '%' }))
-          ),
-          h('button', { class: 'icbtn hr-x', 'aria-label': 'Remove entry' }, ic('x'))
-        );
-        row.addEventListener('click', () => go(watchRouteFor(it, it.ep)));
-        row.addEventListener('keydown', e => { if (e.key === 'Enter') go(watchRouteFor(it, it.ep)); });
-        $('.hr-x', row).addEventListener('click', e => {
-          e.stopPropagation();
-          Store.removeHist(it.key, it.ep);
-          row.remove();
-          toast('Removed from history');
-        });
-        body.append(row);
-      }
-    }
+    /* Level 1 — one row per anime, grouped */
+    renderHistoryGroupsList(body);
   }
   if (window.AOS) AOS.refresh();
 };
@@ -2354,6 +2555,9 @@ Views.details = async function (view, my, key) {
   const paintWatchOrder = rows => {
     if (!alive() || !rows || !rows.length) return;
     secWo.fill(h('div', { class: 'wolist' }, rows.map((r, i) => {
+      /* Normalize so title fields are consistent — watch-order rows come
+         from a different endpoint than /api/anime and may carry only `title`. */
+      r = normalizeEntry(r);
       const isCur = r.key === a.key;
       const row = h('div', { class: 'worow' + (isCur ? ' cur' : ''), tabindex: '0', role: 'link' },
         h('span', { class: 'wo-n', text: String(r.releaseOrder || r.order || i + 1) }),
@@ -2551,7 +2755,7 @@ function createPlayer(box, ui) {
   function build() {
     box.classList.add('player');
     P.video = h('video', { playsinline: true, 'webkit-playsinline': true, preload: 'auto', crossorigin: 'anonymous', style: 'display:none' });
-    P.iframe = h('iframe', { allow: 'autoplay; fullscreen; encrypted-media; picture-in-picture', allowfullscreen: true, style: 'display:none' });
+    P.iframe = h('iframe', { allow: 'autoplay; fullscreen; encrypted-media; picture-in-picture', allowfullscreen: true, tabindex: '-1', style: 'display:none' });
     dom.load = h('div', { class: 'pload' }, h('span', { class: 'dots dots--lg' }, h('i'), h('i'), h('i')), h('span', { class: 'pl-txt', text: 'Resolving stream' }));
     const cpBtn = h('button', { class: 'cp-btn', 'aria-label': 'Play or pause' }, ic('play'));
     cpBtn.addEventListener('click', (e) => {
@@ -2584,13 +2788,14 @@ function createPlayer(box, ui) {
       dom.topTitle,
       dom.topControls
     );
-    /* Seekbar now contains a .ranges layer for multi-stripe buffered viz */
+    /* Seekbar now contains a .ranges layer for multi-stripe buffered viz + a hover/scrub tooltip */
     dom.bar = h('div', { class: 'pcbar' },
       h('div', { class: 'track' },
         h('div', { class: 'ranges' }),
         h('div', { class: 'buf' }),
         h('div', { class: 'fill' }),
-        h('div', { class: 'knob', style: 'left:0' })));
+        h('div', { class: 'knob', style: 'left:0' })),
+      h('div', { class: 'pcbar-tip' }, h('span', { class: 'pcbar-tip-time', text: '0:00' })));
     dom.btnPlay = h('button', { class: 'pcbtn', 'aria-label': 'Play or pause' }, ic('play'));
     dom.btnPrev = h('button', { class: 'pcbtn', 'aria-label': 'Previous episode', disabled: true }, ic('prev'));
     dom.btnNext = h('button', { class: 'pcbtn', 'aria-label': 'Next episode', disabled: true }, ic('next'));
@@ -3237,6 +3442,40 @@ function syncCenter() {
     });
 
     const bar = dom.bar;
+    const tipEl = $('.pcbar-tip', bar);
+    const tipTime = $('.pcbar-tip-time', bar);
+    let tipHideTimer = 0;
+    /* Position the floating time tooltip at ratio x of the bar width.
+       Clamped so the bubble never overflows either end of the bar. */
+    function positionTip(ratio) {
+      if (!tipEl) return;
+      const r = bar.getBoundingClientRect();
+      const tipW = tipEl.offsetWidth || 48;
+      const halfW = tipW / 2;
+      const x = Math.max(halfW, Math.min(r.width - halfW, ratio * r.width));
+      tipEl.style.left = x + 'px';
+    }
+    function showTip() {
+      if (!tipEl) return;
+      clearTimeout(tipHideTimer);
+      tipEl.classList.add('show');
+    }
+    function hideTip(delay) {
+      if (!tipEl) return;
+      clearTimeout(tipHideTimer);
+      if (delay > 0) {
+        tipHideTimer = setTimeout(() => tipEl.classList.remove('show'), delay);
+      } else {
+        tipEl.classList.remove('show');
+      }
+    }
+    function updateTip(ratio) {
+      const v = P.video;
+      if (!v || !v.duration) { if (tipTime) tipTime.textContent = '0:00'; positionTip(ratio); return; }
+      const clamped = Math.max(0, Math.min(1, ratio));
+      if (tipTime) tipTime.textContent = fmtTime(v.duration * clamped);
+      positionTip(clamped);
+    }
     const seekAt = e => {
       const r = bar.getBoundingClientRect();
       const x = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
@@ -3244,14 +3483,42 @@ function syncCenter() {
         P.video.currentTime = x * P.video.duration;
         updTime();
       }
+      updateTip(x);
     };
+    /* Desktop (pointer: fine): hover reveals the bubble at the cursor x. */
+    bar.addEventListener('pointermove', e => {
+      if (P.destroyed) return;
+      const r = bar.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      updateTip(ratio);
+      if (e.pointerType === 'mouse') showTip();
+    });
+    bar.addEventListener('pointerleave', () => { if (!bar.classList.contains('dragging')) hideTip(0); });
     bar.addEventListener('pointerdown', e => {
       try { bar.setPointerCapture(e.pointerId); } catch (err) { }
       bar.classList.add('dragging');
       seekAt(e);
+      /* On touch, show the bubble at the touch point and keep it visible. */
+      showTip();
       const mv = ev => seekAt(ev);
-      const up = () => { bar.classList.remove('dragging'); bar.removeEventListener('pointermove', mv); bar.removeEventListener('pointerup', up); };
-      bar.addEventListener('pointermove', mv); bar.addEventListener('pointerup', up);
+      const up = ev => {
+        bar.classList.remove('dragging');
+        bar.removeEventListener('pointermove', mv);
+        bar.removeEventListener('pointerup', up);
+        bar.removeEventListener('pointercancel', up);
+        if (ev && ev.pointerType !== 'mouse') hideTip(600);
+        else hideTip(0);
+      };
+      const cancel = () => {
+        bar.classList.remove('dragging');
+        bar.removeEventListener('pointermove', mv);
+        bar.removeEventListener('pointerup', up);
+        bar.removeEventListener('pointercancel', cancel);
+        hideTip(0);
+      };
+      bar.addEventListener('pointermove', mv);
+      bar.addEventListener('pointerup', up);
+      bar.addEventListener('pointercancel', cancel);
     });
 
     let longPressTimer = 0;
@@ -3349,7 +3616,15 @@ function syncCenter() {
       P.video.textTracks.addEventListener('change', () => enforceSingleSub(false));
       P.video.textTracks.addEventListener('removetrack', () => enforceSingleSub(false));
     } catch (err) { }
-    P.iframe.addEventListener('load', () => hideLoad());
+    P.iframe.addEventListener('load', () => {
+      hideLoad();
+      /* The iframe no longer auto-steals focus on load (tabindex="-1" above),
+         but if it somehow has focus, pull it back to body so keydown events
+         keep firing for N/P episode shortcuts in Embed mode. */
+      try {
+        if (document.activeElement === P.iframe && document.body) document.body.focus();
+      } catch (e) { }
+    });
   }
 
   function buildCcMenu() {
@@ -3735,12 +4010,30 @@ Views.watch = async function (view, my, key, epRaw) {
     renderModeChips();
   }
 
-  /* ---------- keyboard (direct mode only) ---------- */
+  /* ---------- keyboard (Direct mode controls + mode-agnostic episode nav) ---------- */
   const onKey = e => {
-    if (player.state.mode !== 'direct') return;
     const tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if (box.querySelector('.endcard.show') || box.querySelector('.perr.show') || box.querySelector('.resume-modal.show')) return;
+
+    /* Mode-agnostic: episode nav works in Direct AND Embed mode (it happens
+       at the app level, not inside the iframe — so the iframe owning playback
+       doesn't matter for N/P).                                          */
+    if (e.key === 'n' || e.key === 'N') {
+      e.preventDefault();
+      const n = epByOffset(1); if (n) changeEpisode(n);
+      else toast('No next episode');
+      return;
+    }
+    if (e.key === 'p' || e.key === 'P') {
+      e.preventDefault();
+      const p = epByOffset(-1); if (p) changeEpisode(p);
+      else toast('No previous episode');
+      return;
+    }
+
+    /* Everything below requires Direct mode (needs a <video> element) */
+    if (player.state.mode !== 'direct') return;
     const v = player.video();
     if (!v) return;
     const popsOpen = box.querySelector('.pcpop.open');
@@ -3769,8 +4062,6 @@ Views.watch = async function (view, my, key, epRaw) {
         toggleFullscreenPub();
         break;
       }
-      case 'n': { const n = epByOffset(1); if (n) changeEpisode(n); break; }
-      case 'p': { const p = epByOffset(-1); if (p) changeEpisode(p); break; }
       case 'c': player.cycleSubs(); break;
       case 'Enter': {
         /* Trigger whichever skip button is currently visible (like YT skip ads) */
@@ -3876,7 +4167,7 @@ Views.watch = async function (view, my, key, epRaw) {
     h('span', null, h('span', { class: 'kbd', text: 'Enter' }), ' skip intro/outro'),
     h('span', null, h('span', { class: 'kbd', text: '\u21E7+Enter' }), ' skip ' + (Store.settings.skipDuration || 85) + 's'),
     h('span', null, h('span', { class: 'kbd', text: 'F' }), ' fullscreen'),
-    h('span', null, h('span', { class: 'kbd', text: 'N/P' }), ' next/prev'),
+    h('span', null, h('span', { class: 'kbd', text: 'N/P' }), ' next/prev (works in Embed too)'),
     h('span', { class: 'dismiss', onclick: () => { localStorage.setItem('anikuoshi:kbdhint','1'); kbdHint.remove(); } }, 'Dismiss'));
   if (!localStorage.getItem('anikuoshi:kbdhint')) main.append(kbdHint);
 
