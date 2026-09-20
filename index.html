@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi v1.0.0 — a clean, fast way to watch anime. Search, discover, and stream.">
-<meta name="version" content="1.0.0">
+<meta name="description" content="AniKuoshi v1.0.4 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.4">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi v1.0.0 design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0.4 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -213,8 +213,12 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .hcard:hover .hposter{border-color:var(--line2);box-shadow:var(--shadow-soft)}
 .hcard img{width:100%;height:100%;object-fit:cover;transition:transform .35s var(--ease)}
 .hcard:hover img{transform:scale(1.05)}
-.hcard .hcard-title{margin-top:8px;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;word-break:break-word;min-height:35px}
-.hcard .hcard-meta{margin-top:3px;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard .hcard-title{margin-top:8px;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;word-break:break-word;
+  /* v1.0.3: Fixed 2-line height so every card aligns regardless of title length. */
+  height:calc(1.35em * 2);min-height:0}
+.hcard .hcard-meta{margin-top:3px;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  /* v1.0.3: Always reserve 1 line so meta presence doesn't shift the grid */
+  height:1.4em}
 .hcard .hcard-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.55)}
 .hcard .hcard-prog i{display:block;height:100%;background:var(--acc)}
 .epchip{position:absolute;top:6px;left:6px;background:rgba(10,8,5,.82);color:var(--txt);font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.05em}
@@ -320,10 +324,15 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .player.embed-mode .tapzone,
 .player.embed-mode .skipbtn,
 .player.embed-mode .centerplay,
-.player.embed-mode .endcard,
-.player.embed-mode .perr,
-.player.embed-mode .vign,
-.player.embed-mode .pload{display:none !important}
+.player.embed-mode .vign{display:none !important}
+/* v1.0.1: .pload / .perr / .endcard are intentionally NOT hidden in embed mode.
+   - .pload: shows "Loading EP N" while the iframe reloads after N/P
+   - .perr: shows error messages when the stream fails to resolve
+   - .endcard: shows "Next episode" button when the current episode ends
+   Previously these were all hidden via `display:none !important`, which meant
+   embed-mode episode switches and stream errors were invisible to the user.
+   Now they use their default CSS (display:flex) and JS toggles them via
+   inline `style.display='none'` / `style.display=''` as usual.             */
 .player.embed-mode iframe{
   position:absolute;top:0;left:0;width:100%;height:100%;
   border:0;display:block;background:#000;
@@ -643,7 +652,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* ============ Title-language subtitle on cards ============ */
-.hcard-sub{margin-top:1px;font-size:11px;color:var(--faint);font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none}
+.hcard-sub{margin-top:1px;font-size:11px;color:var(--faint);font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none;height:1.3em}
 .hcard[data-has-sub="1"] .hcard-sub{display:block}
 .ep-card-sm .epname-sub,.sugg-meta .sugg-sub{font-size:10.5px;color:var(--faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* When subtitle is hidden by setting, hide everywhere */
@@ -751,6 +760,83 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
 .pcbar .ranges{position:absolute;left:0;top:0;bottom:0;width:100%;pointer-events:none}
 .pcbar .range-stripe{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.18);border-radius:0}
 
+/* ============ Bookmark dropdown + status badges + confirm dialog ============ */
+.bm-pop{position:absolute;z-index:60;background:rgba(16,13,8,.97);border:1px solid var(--line2);border-radius:14px;
+  min-width:200px;box-shadow:var(--shadow);overflow:hidden;animation:suggPop .18s var(--ease-out);
+  -webkit-overflow-scrolling:touch;touch-action:pan-y}
+.bm-pop .bm-hd{padding:9px 14px 6px;font-size:10.5px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.bm-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:var(--dim);cursor:pointer;
+  white-space:nowrap;transition:background .12s var(--ease),color .12s var(--ease)}
+.bm-item:hover{background:rgba(255,255,255,.05);color:var(--txt)}
+.bm-item.sel{color:var(--txt);font-weight:650}
+.bm-item .bm-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none;opacity:.85}
+.bm-item.sel .bm-dot{box-shadow:0 0 8px currentColor}
+.bm-item .bm-label{flex:1;min-width:0}
+.bm-item .bm-check{opacity:0;color:var(--acc)}
+.bm-item.sel .bm-check{opacity:1}
+.bm-item.bm-remove{color:var(--err);border-top:1px solid var(--line)}
+.bm-item.bm-remove:hover{background:rgba(229,72,77,.08);color:#ff8589}
+.bm-item.bm-remove .bm-dot{background:var(--err)}
+.bm-current-hint{display:flex;align-items:center;gap:8px;padding:6px 14px 8px;font-size:11.5px;color:var(--dim);border-bottom:1px solid var(--line);line-height:1.4}
+.bm-current-hint .bm-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.bm-current-hint b{color:var(--txt);font-weight:650}
+.bm-card-ago{margin-top:2px;font-size:10.5px;color:var(--faint);font-weight:500;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hcard[data-bm-key]{transition:transform .15s var(--ease),opacity .15s var(--ease),border-color .15s var(--ease)}
+.hcard[data-bm-key].bm-dragging{opacity:.5;transform:scale(.95);cursor:grabbing}
+.hcard[data-bm-key].bm-drop-target{outline:2px dashed var(--acc);outline-offset:3px;border-radius:13px}
+.hcard[data-bm-key][draggable="true"]{cursor:grab}
+.hcard[data-bm-key][draggable="true"]:active{cursor:grabbing}
+.bm-grid .hcard{touch-action:pan-y}
+.bm-status-badge{position:absolute;top:6px;left:6px;display:inline-flex;align-items:center;gap:4px;
+  background:rgba(12,10,7,.85);backdrop-filter:blur(6px);border-radius:7px;padding:3px 7px;
+  font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--txt);
+  border:1px solid var(--line);pointer-events:none}
+.bm-status-badge .bm-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.bm-status-badge.status-planning{color:var(--faint)}
+.bm-status-badge.status-watching{color:var(--acc)}
+.bm-status-badge.status-completed{color:var(--ok)}
+.bm-status-badge.status-paused{color:var(--dim)}
+.bm-status-badge.status-dropped{color:var(--err)}
+.bm-toggle{position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:10px;
+  background:rgba(8,6,4,.8);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;
+  color:var(--dim);cursor:pointer;transition:color .15s var(--ease),background .15s var(--ease),transform .12s var(--ease);z-index:2}
+.bm-toggle:hover{color:var(--txt);background:rgba(20,16,10,.95)}
+.bm-toggle:active{transform:scale(.92)}
+.bm-toggle.on{color:var(--acc)}
+.bm-toggle.on.status-watching{color:var(--acc)}
+.bm-toggle.on.status-completed{color:var(--ok)}
+.bm-toggle.on.status-planning{color:var(--faint)}
+.bm-toggle.on.status-paused{color:var(--dim)}
+.bm-toggle.on.status-dropped{color:var(--err)}
+.bm-filter-row{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.bm-filter-row::-webkit-scrollbar{display:none}
+.bm-filter-chip{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--bg2);color:var(--dim);font-size:12px;font-weight:650;
+  white-space:nowrap;cursor:pointer;flex:none;transition:all .15s var(--ease)}
+.bm-filter-chip:hover{color:var(--txt);border-color:var(--line2)}
+.bm-filter-chip .bm-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.bm-filter-chip .bm-count{background:var(--bg4);color:var(--faint);font-size:10px;padding:1px 6px;border-radius:6px;font-weight:700}
+.bm-filter-chip.on{background:var(--accsoft);border-color:rgba(245,165,36,.5);color:var(--acc)}
+.bm-filter-chip.on .bm-count{background:rgba(245,165,36,.2);color:var(--acc)}
+.bm-group-hd{display:flex;align-items:center;gap:8px;margin:18px 0 10px;font-size:13px;font-weight:750;letter-spacing:.02em}
+.bm-group-hd .bm-dot{width:9px;height:9px;border-radius:50%;background:currentColor;flex:none}
+.bm-group-hd .bm-count{margin-left:auto;font-size:11px;color:var(--faint);font-weight:600;background:var(--bg3);padding:2px 8px;border-radius:6px}
+/* Confirm dialog modal */
+#confirmModal .modal-card{max-width:400px}
+.confirm-body{padding:4px 0 16px}
+.confirm-body p{margin:0 0 4px;font-size:14px;color:var(--txt);line-height:1.5}
+.confirm-body small{font-size:12.5px;color:var(--faint);line-height:1.45;display:block;margin-top:4px}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.confirm-actions .btn{min-height:40px;padding:0 16px;font-size:13.5px}
+/* v1.0.4: Resume modal checkbox + episode jump input + settings new rows */
+.resume-modal .resume-dontask{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--dim);cursor:pointer;justify-content:center}
+.resume-modal .resume-dontask input{width:16px;height:16px;accent-color:var(--acc);cursor:pointer}
+.ep-jump-input{width:64px;height:34px;background:var(--bg3);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
+  font-family:var(--mono);font-size:13px;text-align:center;padding:0 4px;outline:none}
+.ep-jump-input:focus{border-color:rgba(245,165,36,.6);box-shadow:0 0 0 3px rgba(245,165,36,.12)}
+.ep-jump-input::-webkit-inner-spin-button,.ep-jump-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.settings-row .ctl .backup-btns{display:flex;gap:6px;flex-wrap:wrap}
+
 /* ============ Subtitle styling (cue) ============ */
 .player video::cue{font-size:var(--cue-size, 18px);line-height:1.4;background:rgba(0,0,0,var(--cue-bg, .65));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8)}
 </style>
@@ -805,6 +891,7 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
   <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 5v14M7 19h4"/></symbol>
   <symbol id="i-forward" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM15 4v16"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 3.5h12a.5.5 0 0 1 .5.5v16l-6.5-4.5L6 20V4a.5.5 0 0 1 .5-.5z"/></symbol>
   <symbol id="i-cc-on" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M10.5 10.2a2.3 2.3 0 1 0 0 3.6M17 10.2a2.3 2.3 0 1 0 0 3.6"/><circle cx="6" cy="18.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="18" cy="18.5" r="1.5" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-gauge-fast" viewBox="0 0 24 24"><path d="M3.5 17.5a8.5 8.5 0 1 1 15 0"/><path d="M12 13.8 16 9.5"/><circle cx="12" cy="14.5" r="1.6"/><path d="M3.5 11h3M4 7l2 1.5"/></symbol>
 </svg>
@@ -829,20 +916,34 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
   <div class="modal-card">
     <div class="modal-hd">
       <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
-      <span class="ver-tag">v1.0.0</span>
+      <span class="ver-tag">v1.0.4</span>
       <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-bd" id="clBody"></div>
   </div>
 </div>
 
+<!-- v1.0.2: Custom confirm dialog (replaces browser-native confirm()) -->
+<div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+  <div class="modal-card">
+    <div class="modal-hd">
+      <h2 id="cfTitle"><svg class="ic"><use href="#i-alert"/></svg> <span id="cfTitleText">Confirm</span></h2>
+      <button class="icbtn x" aria-label="Close" id="cfClose"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-bd">
+      <div class="confirm-body" id="cfBody"></div>
+      <div class="confirm-actions" id="cfActions"></div>
+    </div>
+  </div>
+</div>
+
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi v1.0.0 — core ================= */
+/* ================= AniKuoshi v1.0.4 — core ================= */
 'use strict';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.4';
 const API_BASE = 'https://apikuoshi-v2.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -972,13 +1073,11 @@ function statusKind(status) {
    uses decodeURIComponent, which is a no-op for non-encoded strings.        */
 function routeKey(entry) {
   if (!entry) return '';
-  // Prefer canonical key (anilist:<id> / mal:<id>) for cards from search/suggestions.
-  // Fall back to identities.preferred (slug-first canonical key from details),
-  // then listing slug, then key-as-a-string.
+  /* v1.0.1: APIKuoshi v2.7 accepts any key form on every endpoint. */
   const k = entry.key;
-  if (k && /^anilist:|^mal:/.test(k)) return k;
+  if (k) return k;
   if (entry.identities && entry.identities.preferred) return entry.identities.preferred;
-  return k || entry.slug || '';
+  return entry.slug || '';
 }
 function routeFor(entry) {
   return '/anime/' + routeKey(entry);
@@ -1189,6 +1288,17 @@ function categorizeFranchiseEntry(entry, relation) {
   return 'special';
 }
 
+/* v1.0.2: Bookmark statuses — replaces the simple star toggle. */
+const BOOKMARK_STATUSES = [
+  { id: 'planning',   label: 'Plan to Watch', icon: 'clock',  color: 'var(--faint)' },
+  { id: 'watching',   label: 'Watching',      icon: 'play',   color: 'var(--acc)'   },
+  { id: 'completed',  label: 'Completed',     icon: 'check',  color: 'var(--ok)'    },
+  { id: 'paused',     label: 'Paused',       icon: 'pause',  color: 'var(--dim)'   },
+  { id: 'dropped',    label: 'Dropped',       icon: 'x',      color: 'var(--err)'   }
+];
+const BOOKMARK_STATUS_BY_ID = Object.fromEntries(BOOKMARK_STATUSES.map(s => [s.id, s]));
+const DEFAULT_BOOKMARK_STATUS = 'watching';
+
 /* ---------- persistent store ---------- */
 const Store = {
   read(k, d) { try { return JSON.parse(localStorage.getItem('anikuoshi:' + k)) ?? d; } catch (e) { return d; } },
@@ -1203,18 +1313,65 @@ const Store = {
     skipDuration: 85,         /* Shift+Enter skip seconds */
     subtitleSize: 18,         /* px */
     subtitleBg: 0.65,         /* 0..1 */
-    autoSkipOutro: true       /* mirror autoSkip for outro */
+    autoSkipOutro: true,      /* mirror autoSkip for outro */
+    /* v1.0.4 new settings */
+    volume: 1,                /* 0..1 — persisted across episodes */
+    subLang: null,            /* saved subtitle language code (e.g. 'en') — replaces subIdx */
+    askResume: true,          /* false = skip resume prompt, always continue */
+    libraryBmFilter: 'all'    /* Library bookmarks status filter */
   }, this.read('settings', {})); },
   setSettings(patch) { this.write('settings', Object.assign(this.settings, patch)); },
   get favs() { return this.read('favs', []); },
+  /* v1.0.2: bookmarks() migrates old favs to the new status schema. */
+  bookmarks() {
+    const list = this.favs;
+    let dirty = false;
+    for (const f of list) {
+      if (!f.status || !BOOKMARK_STATUS_BY_ID[f.status]) { f.status = DEFAULT_BOOKMARK_STATUS; dirty = true; }
+      if (!f.updatedAt) { f.updatedAt = f.at || Date.now(); dirty = true; }
+    }
+    if (dirty) this.write('favs', list);
+    return list;
+  },
   isFav(key) { return this.favs.some(f => f.key === key); },
-  toggleFav(card) {
+  bookmarkStatus(key) {
+    const f = this.favs.find(f => f.key === key);
+    return f ? f.status : null;
+  },
+  setBookmark(card, status) {
     const list = this.favs;
     const i = list.findIndex(f => f.key === card.key);
-    if (i >= 0) { list.splice(i, 1); this.write('favs', list); return false; }
-    list.unshift(Object.assign({ at: Date.now() }, card));
-    this.write('favs', list.slice(0, 120));
-    return true;
+    if (status == null) {
+      if (i >= 0) { list.splice(i, 1); this.write('favs', list); }
+      return null;
+    }
+    const now = Date.now();
+    if (i >= 0) {
+      list[i] = Object.assign({}, list[i], card, { status, updatedAt: now });
+      this.write('favs', list);
+      return status;
+    }
+    list.unshift(Object.assign({ at: now, updatedAt: now }, card, { status }));
+    this.write('favs', list.slice(0, 200));
+    return status;
+  },
+  /* Back-compat: toggleFav adds as 'watching' or removes. */
+  toggleFav(card) {
+    const i = this.favs.findIndex(f => f.key === card.key);
+    if (i >= 0) { const list = this.favs; list.splice(i, 1); this.write('favs', list); return null; }
+    return this.setBookmark(card, DEFAULT_BOOKMARK_STATUS);
+  },
+  /* v1.0.3: Manual reorder within a status group. */
+  reorderBookmarks(status, newKeyOrder) {
+    const list = this.favs;
+    newKeyOrder.forEach((key, idx) => {
+      const i = list.findIndex(f => f.key === key && f.status === status);
+      if (i >= 0) list[i].order = idx;
+    });
+    this.write('favs', list);
+  },
+  removeBookmark(key) {
+    this.write('favs', this.favs.filter(f => f.key !== key));
   },
   get hist() { return this.read('hist', []); },
   upsertHist(entry) {
@@ -1223,6 +1380,7 @@ const Store = {
     this.write('hist', list.slice(0, 300));
   },
   removeHist(key, ep) { this.write('hist', this.hist.filter(x => !(x.key === key && Number(x.ep) === Number(ep)))); },
+  removeHistAll(key) { this.write('hist', this.hist.filter(x => x.key !== key)); },
   getProg(key, ep) { return this.read('prog', {})[key + '|' + ep] || null; },
   setProg(key, ep, pos, dur) {
     const all = this.read('prog', {});
@@ -1235,14 +1393,20 @@ const Store = {
   setToggle(name, val) { this.write('toggles', Object.assign(this.getToggles(), { [name]: val })); }
 };
 function continueList() {
+  /* v1.0.1: The watch view now marks episodes as watched on load (v1.0.2 addition).
+     Pick the most recent entry per anime, keep entries watched within 30 days. */
   const seen = new Map();
+  const now = Date.now();
+  const RECENT_MS = 30 * 86400e3; /* 30 days */
   for (const it of Store.hist) {
-    if (!seen.has(it.key)) seen.set(it.key, it);
+    if (!it || !it.key) continue;
+    const existing = seen.get(it.key);
+    if (!existing || (it.at || 0) > (existing.at || 0)) seen.set(it.key, it);
   }
   return Array.from(seen.values())
-    .filter(it => (it.pos || 0) >= 15 && (!it.dur || (it.pos || 0) < it.dur * 0.96))
+    .filter(it => (now - (it.at || 0)) < RECENT_MS) /* watched within 30 days */
     .sort((a, b) => (b.at || 0) - (a.at || 0))
-    .slice(0, 14);
+    .slice(0, 30);
 }
 
 /* ---------- History grouping helpers (Task 1) ----------
@@ -1404,13 +1568,24 @@ function prefetchDetails(key) {
 function normalizeEntry(it) {
   if (!it) return it;
   if (Array.isArray(it)) return it.map(normalizeEntry);
-  return Object.assign({}, it, {
-    titleRomaji:  it.titleRomaji  || it.romaji  || it.title || '',
-    titleEnglish: it.titleEnglish || it.english || it.title_english || '',
-    titleNative:  it.titleNative  || it.native  || it.title_native  || '',
-    poster:       it.poster || it.image || it.cover || it.thumbnail || '',
-    key:          it.key || it.slug || ''
+  const base = Object.assign({}, it, {
+    poster: it.poster || it.image || it.cover || it.thumbnail || '',
+    key: it.key || it.slug || ''
   });
+  const titleRomaji = base.titleRomaji || base.romaji || base.title || '';
+  let titleEnglish = base.titleEnglish || base.english || base.title_english || '';
+  let titleNative = base.titleNative || base.native || base.title_native || '';
+  /* v1.0.1: The API often puts the English title in `title` but leaves
+     `titleEnglish` empty. Use `title` as a fallback ONLY when it differs
+     from `titleRomaji` — otherwise we'd accidentally promote the romaji
+     duplicate to English. */
+  if (!titleEnglish && base.title && base.title !== titleRomaji) {
+    titleEnglish = base.title;
+  }
+  if (!titleNative && base.title && base.title !== titleRomaji && base.title !== titleEnglish && /[^\u0000-\u007f]/.test(base.title)) {
+    titleNative = base.title;
+  }
+  return Object.assign(base, { titleRomaji, titleEnglish, titleNative });
 }
 function animeCard(entry, opts) {
   opts = opts || {};
@@ -1583,19 +1758,15 @@ const Header = {
   },
   sub(title, opts) {
     opts = opts || {};
+    /* v1.0.3: Removed the redundant header bookmark/star button. The details
+       page has its own bookmark button (#dStar) in the CTA row, so a second
+       one in the header next to settings/version was clutter. */
     this.el.replaceChildren(...[
       h('button', { class: 'hd-btn', 'aria-label': 'Back', onclick: () => Router.back() }, ic('back')),
       h('div', { class: 'hd-title', text: title }),
       h('span', { class: 'hd-sp' }),
       h('button', { class: 'hd-btn', 'aria-label': 'Settings', onclick: () => Settings.open() }, ic('settings')),
       h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
-      opts.starKey ? h('button', { class: 'hd-btn' + (Store.isFav(opts.starKey) ? ' star-on' : ''), 'aria-label': 'Favorite', id: 'hdStar', onclick: () => {
-        const btn = $('#hdStar');
-        const on = Store.toggleFav(opts.starCard);
-        btn.classList.toggle('star-on', on);
-        toast(on ? 'Added to favorites' : 'Removed from favorites');
-        if (opts.onStar) opts.onStar(on);
-      } }, ic('star')) : null,
       opts.search ? h('button', { class: 'hd-btn', 'aria-label': 'Search', onclick: () => go('/') }, ic('search')) : null
     ].filter(Boolean));
     document.title = (title ? title + ' \u00b7 ' : '') + 'AniKuoshi';
@@ -1610,6 +1781,55 @@ const Changelog = {
     this.modal = $('#changelogModal');
     this.body = $('#clBody');
     this.body.replaceChildren(
+      /* ---------- v1.0.4 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.4', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, '/ keyboard shortcut to focus search.'), ' Press ', h('code', null, '/'), ' from anywhere to jump the cursor into the search box. Press ', h('code', null, 'Esc'), ' to leave.')),
+          h('li', null, h('span', null, h('b', null, 'Persistent volume.'), ' The player now remembers your volume level (not just mute state) across episodes and reloads.')),
+          h('li', null, h('span', null, h('b', null, 'Subtitle preference by language, not index.'), ' Saving subtitle choice as a track index broke when switching between sub and dub anime (different track lists). Now the language code is saved and matched on each new episode.')),
+          h('li', null, h('span', null, h('b', null, 'Backup & restore data.'), ' Settings → Data has Export (downloads a JSON file with all your bookmarks, history, progress, and settings) and Import (restores from a JSON file). Survives browser clears and device switches.')),
+          h('li', null, h('span', null, h('b', null, 'Auto-mark Completed.'), ' When you finish the last episode of an anime you have bookmarked as "Watching", it is automatically bumped to "Completed" — no manual status change needed.')),
+          h('li', null, h('span', null, h('b', null, '"Don\'t ask again" on resume modal.'), ' A checkbox on the resume prompt lets power users skip the prompt forever; new episodes just continue from saved position. Toggle it back in Settings.')),
+          h('li', null, h('span', null, h('b', null, 'Episode number jump.'), ' For long-running shows (One Piece, etc.), a tiny # input on the Episodes header jumps straight to that episode — no more scrolling through hundreds of cards.'))
+        )
+      ),
+
+      /* ---------- v1.0.3 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.3', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Removed the redundant header bookmark button.'), ' The details page already has its own bookmark button in the CTA row, so the duplicate star icon that appeared in the header next to the settings/version buttons is gone.')),
+          h('li', null, h('span', null, h('b', null, 'Bookmark cards show "added X days ago".'), ' The bookmark dropdown and the Library grid both display a small relative-time line so you can see when you last set or changed a status.')),
+          h('li', null, h('span', null, h('b', null, 'Manual reorder within a status.'), ' Drag any bookmark card to reorder it within its status group. The custom order persists across reloads.')),
+          h('li', null, h('span', null, h('b', null, 'Uniform card grid.'), ' Long titles no longer disrupt the grid layout — every card reserves the same fixed height for the title (2 lines), subtitle (1 line), and meta (1 line) areas.')),
+          h('li', null, h('span', null, h('b', null, 'Next-episode preload.'), ' When the current episode is within ~60 seconds of ending, the player silently resolves the next episode stream in the background. When the user clicks Next or auto-next fires, the stream loads instantly from cache.')),
+          h('li', null, h('span', null, h('b', null, 'Neutral loading text.'), ' The loading overlay now says "Loading EP N" instead of "Loading next episode", so it is correct regardless of whether the user pressed N (next) or P (previous).'))
+        )
+      ),
+
+      /* ---------- v1.0.2 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.2', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Continue Watching updates the moment you open an episode.'), ' Previously the shelf only added an entry after 15s of progress was reported, which never happened in Embed mode. Now the watch view marks the episode as watched on load, so the shelf reflects what you are currently watching. The 15s threshold is gone, the cap is up from 14 to 30, and the existing horizontal scroll handles overflow.')),
+          h('li', null, h('span', null, h('b', null, 'Favorites → Bookmarks with status.'), ' The star toggle is now a bookmark button with a status dropdown: Plan to Watch, Watching, Completed, Paused, Dropped. The Library tab shows bookmarks grouped by status with filter chips, and entries are sorted within each group by most-recently-updated. Existing favorites migrate automatically to "Watching".')),
+          h('li', null, h('span', null, h('b', null, 'Custom confirm modals.'), ' The browser-native ', h('code', null, 'confirm()'), ' dialogs (clear history, clear cache) are replaced with a styled modal that matches the espresso-black + amber design system.'))
+        )
+      ),
+
+      /* ---------- v1.0.1 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.1', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Continue Watching no longer drops the anime you just finished.'), ' Finished episodes now stay on the shelf (labelled "Finished · EP N") instead of vanishing the moment you reach the credits. A 30-day recency window keeps the shelf from filling up with old watches.')),
+          h('li', null, h('span', null, h('b', null, 'Embed player N/P now works in fullscreen.'), ' Cross-origin iframes swallow keyboard events when they have focus. The iframe is now blocked from gaining focus on mousedown (clicks still reach the embed player, so play/pause keeps working), so the parent document retains keyboard focus and N/P episode shortcuts fire even while you are interacting with the embed.')),
+          h('li', null, h('span', null, h('b', null, 'Embed episode switches show a loading indicator.'), ' The loading overlay, error overlay, and endcard are no longer hidden in embed mode, so you see "Loading EP N" while the iframe reloads after an N/P switch.')),
+          h('li', null, h('span', null, h('b', null, 'Recommendations now respect the title-language setting.'), ' The Recommendations API often returns the English title in the ', h('code', null, 'title'), ' field but leaves ', h('code', null, 'titleEnglish'), ' empty. The normalizer now falls back to ', h('code', null, 'title'), ' when it differs from romaji, so cards render in English when the user picked the English language.')),
+          h('li', null, h('span', null, h('b', null, 'Details page accepts any key form.'), ' APIKuoshi v2.7 resolves ', h('code', null, 'anilist:<id>'), ', ', h('code', null, 'mal:<id>'), ', listing slugs, numeric ids, and even plain titles on every endpoint. The client no longer prefers anilist/mal keys over slugs for routing — it just uses whatever identity the entry carries, and the API resolves it correctly.'))
+        )
+      ),
+
       /* ---------- Hero ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('spark', 14), 'AniKuoshi v1.0.0', h('span', { class: 'n', text: 'Initial public release' })),
@@ -1653,7 +1873,7 @@ const Changelog = {
       /* ---------- Credits ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('info', 14), 'Credits'),
-        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.0 · RYZISHIN. Streaming metadata and playback provided by <a href="https://apikuoshi-v2.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.4 · RYZISHIN. Streaming metadata and playback provided by <a href="https://apikuoshi-v2.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
       )
     );
     $('#clClose').addEventListener('click', () => Changelog.close());
@@ -1662,6 +1882,131 @@ const Changelog = {
   },
   open() { this.modal.classList.add('open'); document.body.style.overflow = 'hidden'; },
   close() { this.modal.classList.remove('open'); document.body.style.overflow = ''; }
+};
+
+/* ---------- v1.0.2: Custom confirm dialog ---------- */
+const ConfirmDialog = {
+  modal: null, titleEl: null, bodyEl: null, actionsEl: null, _resolve: null,
+  init() {
+    this.modal = $('#confirmModal');
+    this.titleEl = $('#cfTitleText');
+    this.bodyEl = $('#cfBody');
+    this.actionsEl = $('#cfActions');
+    const close = (result) => {
+      this.modal.classList.remove('open');
+      document.body.style.overflow = '';
+      if (this._resolve) { this._resolve(result); this._resolve = null; }
+    };
+    $('#cfClose').addEventListener('click', () => close(false));
+    this.modal.addEventListener('click', e => { if (e.target === this.modal) close(false); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && this.modal.classList.contains('open')) close(false);
+      if (e.key === 'Enter' && this.modal.classList.contains('open')) close(true);
+    });
+  },
+  open(opts) {
+    opts = opts || {};
+    this.titleEl.textContent = opts.title || 'Confirm';
+    this.bodyEl.replaceChildren(
+      h('p', { text: opts.body || 'Are you sure?' }),
+      opts.hint ? h('small', { text: opts.hint }) : null
+    );
+    this.actionsEl.replaceChildren(
+      h('button', { class: 'btn btn--line',
+        onclick: () => { this.modal.classList.remove('open'); document.body.style.overflow = ''; if (this._resolve) { this._resolve(false); this._resolve = null; } if (opts.onConfirm) opts.onConfirm(false); }
+      }, opts.cancelLabel || 'Cancel'),
+      h('button', { class: 'btn ' + (opts.danger ? 'btn--danger' : 'btn--acc'),
+        onclick: () => { this.modal.classList.remove('open'); document.body.style.overflow = ''; if (this._resolve) { this._resolve(true); this._resolve = null; } if (opts.onConfirm) opts.onConfirm(true); }
+      }, opts.danger ? ic('trash', 14) : null, opts.confirmLabel || 'Confirm')
+    );
+    this.modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    return new Promise(resolve => { this._resolve = resolve; });
+  }
+};
+
+/* ---------- v1.0.2: Bookmark dropdown menu ---------- */
+const BookmarkMenu = {
+  _open: null,
+  open(opts) {
+    this.close();
+    opts = opts || {};
+    const anchor = opts.anchor;
+    const card = opts.card;
+    if (!anchor || !card || !card.key) return;
+    const cur = Store.bookmarkStatus(card.key);
+    const bmEntry = Store.favs.find(f => f.key === card.key);
+    const updatedAgo = bmEntry ? fmtAgo(bmEntry.updatedAt || bmEntry.at || 0) : '';
+    const curLabel = cur ? (BOOKMARK_STATUS_BY_ID[cur] || {}).label : '';
+    const pop = h('div', { class: 'bm-pop', role: 'menu' },
+      h('div', { class: 'bm-hd', text: 'Bookmark as' }),
+      cur ? h('div', { class: 'bm-current-hint' },
+        h('span', { class: 'bm-dot', style: 'color:' + ((BOOKMARK_STATUS_BY_ID[cur] || {}).color || 'var(--dim)') }),
+        h('span', null, h('b', { text: curLabel }), h('span', { text: ' · ' + updatedAgo }))
+      ) : null,
+      ...BOOKMARK_STATUSES.map(s => {
+        const isSel = cur === s.id;
+        const item = h('div', { class: 'bm-item' + (isSel ? ' sel' : ''), role: 'menuitemradio', 'aria-checked': isSel ? 'true' : 'false', tabindex: '0' },
+          h('span', { class: 'bm-dot', style: 'color:' + s.color }),
+          h('span', { class: 'bm-label', text: s.label }),
+          h('span', { class: 'bm-check' }, ic('check', 14))
+        );
+        item.addEventListener('click', () => {
+          Store.setBookmark(card, s.id);
+          toast('Bookmarked as ' + s.label);
+          this.close();
+          if (opts.onPick) opts.onPick(s.id);
+        });
+        item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.click(); } });
+        return item;
+      }),
+      cur ? h('div', { class: 'bm-item bm-remove', role: 'menuitem', tabindex: '0' },
+        h('span', { class: 'bm-dot' }),
+        h('span', { class: 'bm-label', text: 'Remove bookmark' })
+      ) : null
+    );
+    const rmRow = pop.querySelector('.bm-remove');
+    if (rmRow) {
+      rmRow.addEventListener('click', () => {
+        Store.setBookmark(card, null);
+        toast('Removed bookmark');
+        this.close();
+        if (opts.onPick) opts.onPick(null);
+      });
+      rmRow.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); rmRow.click(); } });
+    }
+    document.body.append(pop);
+    const r = anchor.getBoundingClientRect();
+    const pw = pop.offsetWidth;
+    const ph = pop.offsetHeight;
+    let left = r.right - pw;
+    let top = r.bottom + 6;
+    if (left < 8) left = 8;
+    if (top + ph > window.innerHeight - 8) top = Math.max(8, r.top - ph - 6);
+    pop.style.position = 'fixed';
+    pop.style.left = left + 'px';
+    pop.style.top = top + 'px';
+    pop.style.zIndex = '300';
+    this._open = pop;
+    const closeHandler = (e) => {
+      if (!pop.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) {
+        this.close();
+        document.removeEventListener('pointerdown', closeHandler, true);
+        window.removeEventListener('scroll', closeHandler, true);
+      }
+    };
+    const escHandler = (e) => {
+      if (e.key === 'Escape') { this.close(); document.removeEventListener('keydown', escHandler, true); }
+    };
+    setTimeout(() => {
+      document.addEventListener('pointerdown', closeHandler, true);
+      window.addEventListener('scroll', closeHandler, true);
+      document.addEventListener('keydown', escHandler, true);
+    }, 0);
+  },
+  close() {
+    if (this._open) { this._open.remove(); this._open = null; }
+  }
 };
 
 /* ---------- Settings panel ---------- */
@@ -1774,21 +2119,111 @@ const Settings = {
               oninput: (e) => { Store.setSettings({ subtitleBg: parseFloat(e.target.value) }); applyTheme(); $('.val', e.target.parentElement).textContent = Math.round(parseFloat(e.target.value) * 100) + '%'; } }),
             h('span', { class: 'val', text: Math.round((s.subtitleBg != null ? s.subtitleBg : 0.65) * 100) + '%' }))));
     }
+    /* v1.0.4: Backup & restore */
+    if (key === 'backup') {
+      return h('div', { class: 'settings-row', dataset: { row: 'backup' } },
+        h('div', { class: 'lbl' }, 'Backup data', h('small', null, 'Download all bookmarks, history, progress, and settings as a JSON file')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'backup-btns' },
+            h('button', { class: 'btn btn--line', style: 'min-height:38px;padding:0 14px;font-size:13px',
+              onclick: () => {
+                const data = {};
+                ['favs','hist','prog','settings','toggles','cc'].forEach(k => {
+                  try { data[k] = JSON.parse(localStorage.getItem('anikuoshi:' + k) || 'null'); } catch (e) { }
+                });
+                data._meta = { app: 'AniKuoshi', version: APP_VERSION, exportedAt: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = h('a', { href: url, download: 'anikuoshi-backup-' + new Date().toISOString().slice(0, 10) + '.json' });
+                document.body.append(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                toast('Backup downloaded');
+              }
+            }, ic('ext', 14), 'Export'),
+            h('button', { class: 'btn btn--line', style: 'min-height:38px;padding:0 14px;font-size:13px',
+              onclick: () => {
+                const inp = h('input', { type: 'file', accept: 'application/json,.json' });
+                inp.style.display = 'none';
+                document.body.append(inp);
+                inp.addEventListener('change', (e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (!file) { inp.remove(); return; }
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    try {
+                      const data = JSON.parse(ev.target.result);
+                      if (!data || (data.app !== 'AniKuoshi' && !(data._meta && data._meta.app === 'AniKuoshi'))) {
+                        ConfirmDialog.open({ title: 'Invalid file', body: 'This file does not look like an AniKuoshi backup.', confirmLabel: 'OK', cancelLabel: 'Close', danger: true });
+                        inp.remove(); return;
+                      }
+                      ConfirmDialog.open({
+                        title: 'Restore backup',
+                        body: 'Restore data from "' + file.name + '"?',
+                        hint: 'This will OVERWRITE all current bookmarks, history, progress, and settings. The page will reload.',
+                        confirmLabel: 'Restore',
+                        cancelLabel: 'Cancel',
+                        danger: true,
+                        onConfirm: (ok) => {
+                          if (!ok) { inp.remove(); return; }
+                          ['favs','hist','prog','settings','toggles','cc'].forEach(k => {
+                            try { if (data[k] != null) localStorage.setItem('anikuoshi:' + k, JSON.stringify(data[k])); } catch (e) { }
+                          });
+                          toast('Backup restored — reloading');
+                          setTimeout(() => location.reload(), 800);
+                        }
+                      });
+                    } catch (err) {
+                      toast('Could not read backup file');
+                    }
+                    inp.remove();
+                  };
+                  reader.readAsText(file);
+                });
+                inp.click();
+              }
+            }, ic('refresh', 14), 'Import')
+          )
+        )
+      );
+    }
+    /* v1.0.4: Ask-to-resume toggle (re-enable after disabling via the modal checkbox) */
+    if (key === 'askResume') {
+      const s = Store.settings;
+      return h('div', { class: 'settings-row', dataset: { row: 'askResume' } },
+        h('div', { class: 'lbl' }, 'Ask to resume', h('small', null, 'Show the "Continue from X" prompt when switching to an episode with saved progress')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'seg' },
+            h('button', { class: s.askResume !== false ? 'on' : '', onclick: () => { Store.setSettings({ askResume: true }); this.refreshRow('askResume'); } }, 'On'),
+            h('button', { class: s.askResume === false ? 'on' : '', onclick: () => { Store.setSettings({ askResume: false }); this.refreshRow('askResume'); } }, 'Off')
+          )
+        )
+      );
+    }
     if (key === 'clearCache') {
       return h('div', { class: 'settings-row', dataset: { row: 'clearCache' } },
         h('div', { class: 'lbl' }, 'Clear cache & history', h('small', null, 'Wipes favorites, history, progress, settings, and in-memory cache; reloads the page')),
         h('div', { class: 'ctl' },
           h('button', { class: 'btn btn--danger', style: 'min-height:38px;padding:0 14px;font-size:13px',
             onclick: () => {
-              if (!confirm('Clear ALL local data — favorites, history, progress, settings?')) return;
-              try {
-                ['favs','hist','prog','settings','toggles','kbdhint','cc'].forEach(k => localStorage.removeItem('anikuoshi:' + k));
-              } catch (e) { }
-              MemCache.clear();
-              WatchCore.clearAll();
-              Franchise._rootCache.clear();
-              location.href = '/';
-              location.reload();
+              ConfirmDialog.open({
+                title: 'Clear all data',
+                body: 'Clear ALL local data — favorites, history, progress, settings?',
+                hint: 'This cannot be undone. The page will reload after clearing.',
+                confirmLabel: 'Clear all',
+                cancelLabel: 'Cancel',
+                danger: true,
+                onConfirm: (ok) => {
+                  if (!ok) return;
+                  try {
+                    ['favs','hist','prog','settings','toggles','kbdhint','cc'].forEach(k => localStorage.removeItem('anikuoshi:' + k));
+                  } catch (e) { }
+                  MemCache.clear();
+                  WatchCore.clearAll();
+                  Franchise._rootCache.clear();
+                  location.href = '/';
+                  location.reload();
+                }
+              });
             }
           }, ic('trash', 14), 'Clear all')));
     }
@@ -1806,12 +2241,17 @@ const Settings = {
       ),
       h('div', { class: 'settings-section' },
         h('h3', null, ic('gauge-fast', 14), 'Playback'),
-        this.buildRow('skipDuration')
+        this.buildRow('skipDuration'),
+        this.buildRow('askResume')
       ),
       h('div', { class: 'settings-section' },
         h('h3', null, ic('cc-on', 14), 'Subtitles'),
         this.buildRow('subtitleSize'),
         this.buildRow('subtitleBg')
+      ),
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('ext', 14), 'Backup'),
+        this.buildRow('backup')
       ),
       h('div', { class: 'settings-section' },
         h('h3', null, ic('trash', 14), 'Data'),
@@ -1822,7 +2262,7 @@ const Settings = {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.0 — views: home / search / library ================= */
+/* ================= AniKuoshi v1.0.4 — views: home / search / library ================= */
 'use strict';
 
 /* ---------- live suggestions ---------- */
@@ -2148,15 +2588,24 @@ function renderHistoryGroupsList(body) {
     row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goDrill(); } });
     $('.hr-x', row).addEventListener('click', e => {
       e.stopPropagation();
-      if (!confirm('Clear ALL history for "' + bestTitle(s.entry) + '"? (' + s.total + (s.total === 1 ? ' episode' : ' episodes') + ')')) return;
-      const list = Store.hist.filter(x => x.key !== g.key);
-      Store.write('hist', list);
-      toast('Cleared ' + s.total + (s.total === 1 ? ' entry' : ' entries'));
-      row.remove();
-      if (!Store.hist.length) {
-        body.replaceChildren();
-        body.append(emptyState('history', 'Nothing watched yet', 'Episodes you watch will show up here so you can pick up where you left off.'));
-      }
+      ConfirmDialog.open({
+        title: 'Clear history',
+        body: 'Clear ALL history for "' + bestTitle(s.entry) + '"?',
+        hint: s.total + (s.total === 1 ? ' episode' : ' episodes') + ' will be removed. This cannot be undone.',
+        confirmLabel: 'Clear ' + s.total,
+        cancelLabel: 'Cancel',
+        danger: true,
+        onConfirm: (ok) => {
+          if (!ok) return;
+          Store.removeHistAll(g.key);
+          toast('Cleared ' + s.total + (s.total === 1 ? ' entry' : ' entries'));
+          row.remove();
+          if (!Store.hist.length) {
+            body.replaceChildren();
+            body.append(emptyState('history', 'Nothing watched yet', 'Episodes you watch will show up here so you can pick up where you left off.'));
+          }
+        }
+      });
     });
     body.append(row);
   }
@@ -2200,10 +2649,20 @@ function renderHistoryGroupDrill(body, animeKey) {
           go(watchRouteFor(entry, target.ep));
         } }, ic('play', 16), 'Resume EP ' + latest.ep),
         h('button', { class: 'btn btn--danger', style: 'min-height:38px;padding:0 14px;font-size:13px', onclick: () => {
-          if (!confirm('Clear ALL history for "' + bestTitle(entry) + '"?')) return;
-          Store.write('hist', Store.hist.filter(x => x.key !== animeKey));
-          toast('Cleared history for ' + bestTitle(entry));
-          go('/library?tab=hist');
+          ConfirmDialog.open({
+            title: 'Clear history',
+            body: 'Clear ALL history for "' + bestTitle(entry) + '"?',
+            hint: all.length + (all.length === 1 ? ' episode' : ' episodes') + ' will be removed. This cannot be undone.',
+            confirmLabel: 'Clear ' + all.length,
+            cancelLabel: 'Cancel',
+            danger: true,
+            onConfirm: (ok) => {
+              if (!ok) return;
+              Store.removeHistAll(animeKey);
+              toast('Cleared history for ' + bestTitle(entry));
+              go('/library?tab=hist');
+            }
+          });
         } }, ic('trash', 16), 'Clear')
       )
     )
@@ -2242,14 +2701,205 @@ function renderHistoryGroupDrill(body, animeKey) {
   }
 }
 
+/* v1.0.2: Bookmarks tab — status filter chips + grouped grid + drag-and-drop. */
+function renderBookmarksTab(body) {
+  const all = Store.bookmarks();
+  if (!all.length) {
+    body.append(emptyState('bookmark', 'No bookmarks yet',
+      'Tap the bookmark icon on any title to organize it by status — Plan to Watch, Watching, Completed, Paused, or Dropped.',
+      h('button', { class: 'btn btn--acc', onclick: () => go('/') }, ic('search'), 'Find something to watch')));
+    return;
+  }
+  const counts = Object.fromEntries(BOOKMARK_STATUSES.map(s => [s.id, 0]));
+  for (const f of all) { if (counts[f.status] != null) counts[f.status]++; }
+  const total = all.length;
+  const filter = Store.settings.libraryBmFilter || 'all';
+  const chipRow = h('div', { class: 'bm-filter-row' });
+  const allChip = h('button', {
+    class: 'bm-filter-chip' + (filter === 'all' ? ' on' : ''),
+    onclick: () => { Store.setSettings({ libraryBmFilter: 'all' }); Router.render(); }
+  }, h('span', { class: 'bm-dot', style: 'color:var(--acc)' }), 'All', h('span', { class: 'bm-count', text: String(total) }));
+  chipRow.append(allChip);
+  for (const s of BOOKMARK_STATUSES) {
+    if (counts[s.id] === 0) continue;
+    const chip = h('button', {
+      class: 'bm-filter-chip status-' + s.id + (filter === s.id ? ' on' : ''),
+      onclick: () => { Store.setSettings({ libraryBmFilter: s.id }); Router.render(); }
+    }, h('span', { class: 'bm-dot', style: 'color:' + s.color }), s.label, h('span', { class: 'bm-count', text: String(counts[s.id]) }));
+    chipRow.append(chip);
+  }
+  body.append(chipRow);
+  const statusesToShow = filter === 'all'
+    ? BOOKMARK_STATUSES.filter(s => counts[s.id] > 0)
+    : BOOKMARK_STATUSES.filter(s => s.id === filter);
+  if (!statusesToShow.length) {
+    body.append(emptyState('bookmark', 'No bookmarks in "' + (BOOKMARK_STATUS_BY_ID[filter] || { label: filter }).label + '"',
+      'Pick a different status filter, or bookmark more titles.',
+      h('button', { class: 'btn btn--line', onclick: () => { Store.setSettings({ libraryBmFilter: 'all' }); Router.render(); } }, ic('back', 14), 'Show all')));
+    return;
+  }
+  for (const s of statusesToShow) {
+    const entries = all.filter(f => f.status === s.id);
+    const hasManualOrder = entries.some(f => f.order != null);
+    entries.sort((a, b) => {
+      if (hasManualOrder) {
+        const oa = a.order != null ? a.order : 9999;
+        const ob = b.order != null ? b.order : 9999;
+        if (oa !== ob) return oa - ob;
+      }
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+    });
+    if (!entries.length) continue;
+    const groupHd = h('div', { class: 'bm-group-hd', style: 'color:' + s.color },
+      h('span', { class: 'bm-dot' }),
+      h('span', { text: s.label }),
+      h('span', { class: 'bm-count', text: entries.length + (entries.length === 1 ? ' title' : ' titles') })
+    );
+    body.append(groupHd);
+    const grid = h('div', { class: 'grid bm-grid', dataset: { status: s.id } });
+    for (const f of entries) {
+      const c = animeCard(f);
+      c.setAttribute('data-aos', 'fade-up');
+      c.setAttribute('draggable', 'true');
+      c.dataset.bmKey = f.key;
+      const badge = h('div', { class: 'bm-status-badge status-' + s.id },
+        h('span', { class: 'bm-dot' }),
+        h('span', { text: s.label })
+      );
+      $('.hposter', c).style.position = 'relative';
+      $('.hposter', c).append(badge);
+      const agoLine = h('div', { class: 'bm-card-ago', text: fmtAgo(f.updatedAt || f.at || 0) });
+      c.append(agoLine);
+      const bmToggle = h('button', {
+        class: 'bm-toggle on status-' + s.id,
+        'aria-label': 'Change bookmark status',
+        title: 'Bookmark'
+      }, ic(s.icon, 14));
+      bmToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        BookmarkMenu.open({
+          anchor: bmToggle,
+          card: f,
+          onPick: () => Router.render()
+        });
+      });
+      $('.hposter', c).append(bmToggle);
+      grid.append(c);
+    }
+    wireBookmarkDnD(grid, s.id);
+    body.append(grid);
+  }
+}
+
+/* v1.0.3: Drag-and-drop reordering for bookmark cards. */
+function wireBookmarkDnD(grid, status) {
+  let dragged = null;
+  let touchStartY = 0, touchStartX = 0;
+  let touchActive = false;
+  const cards = () => Array.from(grid.querySelectorAll('.hcard[data-bm-key]'));
+  grid.addEventListener('dragstart', (e) => {
+    const card = e.target.closest('.hcard[data-bm-key]');
+    if (!card) return;
+    dragged = card;
+    card.classList.add('bm-dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', card.dataset.bmKey); } catch (err) { }
+  });
+  grid.addEventListener('dragend', () => {
+    if (dragged) dragged.classList.remove('bm-dragging');
+    dragged = null;
+    cards().forEach(c => c.classList.remove('bm-drop-target'));
+  });
+  grid.addEventListener('dragover', (e) => {
+    if (!dragged) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const over = e.target.closest('.hcard[data-bm-key]');
+    cards().forEach(c => c.classList.toggle('bm-drop-target', c === over && c !== dragged));
+  });
+  grid.addEventListener('dragleave', (e) => {
+    const over = e.target.closest('.hcard[data-bm-key]');
+    if (over) over.classList.remove('bm-drop-target');
+  });
+  grid.addEventListener('drop', (e) => {
+    if (!dragged) return;
+    e.preventDefault();
+    const target = e.target.closest('.hcard[data-bm-key]');
+    if (!target || target === dragged) return;
+    const ordered = cards();
+    const fromIdx = ordered.indexOf(dragged);
+    const toIdx = ordered.indexOf(target);
+    if (fromIdx < 0 || toIdx < 0) return;
+    ordered.splice(fromIdx, 1);
+    ordered.splice(toIdx, 0, dragged);
+    Store.reorderBookmarks(status, ordered.map(c => c.dataset.bmKey));
+    ordered.forEach(c => { grid.append(c); c.classList.remove('bm-drop-target'); });
+    toast('Reordered');
+    dragged = null;
+  });
+  /* Mobile: long-press (300ms) activates drag mode */
+  grid.addEventListener('touchstart', (e) => {
+    const card = e.target.closest('.hcard[data-bm-key]');
+    if (!card || e.target.closest('.bm-toggle')) return;
+    const t = e.touches[0];
+    touchStartX = t.clientX; touchStartY = t.clientY;
+    touchActive = false;
+    const timer = setTimeout(() => {
+      touchActive = true; dragged = card; card.classList.add('bm-dragging');
+      navigator.vibrate && navigator.vibrate(15);
+    }, 300);
+    const cancel = () => { clearTimeout(timer); grid.removeEventListener('touchmove', cm); grid.removeEventListener('touchend', ce); };
+    const cm = (ev) => {
+      const t2 = ev.touches[0];
+      if (Math.abs(t2.clientX - touchStartX) > 8 || Math.abs(t2.clientY - touchStartY) > 8) cancel();
+    };
+    const ce = () => cancel();
+    grid.addEventListener('touchmove', cm, { passive: true });
+    grid.addEventListener('touchend', ce, { passive: true });
+  }, { passive: true });
+  grid.addEventListener('touchmove', (e) => {
+    if (!touchActive || !dragged) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const over = el && el.closest('.hcard[data-bm-key]');
+    cards().forEach(c => c.classList.toggle('bm-drop-target', c === over && c !== dragged));
+  }, { passive: false });
+  grid.addEventListener('touchend', (e) => {
+    if (!touchActive || !dragged) { touchActive = false; dragged = null; return; }
+    const t = e.changedTouches[0];
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    const target = el && el.closest('.hcard[data-bm-key]');
+    if (target && target !== dragged) {
+      const ordered = cards();
+      const fromIdx = ordered.indexOf(dragged);
+      const toIdx = ordered.indexOf(target);
+      if (fromIdx >= 0 && toIdx >= 0) {
+        ordered.splice(fromIdx, 1);
+        ordered.splice(toIdx, 0, dragged);
+        Store.reorderBookmarks(status, ordered.map(c => c.dataset.bmKey));
+        ordered.forEach(c => grid.append(c));
+        toast('Reordered');
+      }
+    }
+    if (dragged) dragged.classList.remove('bm-dragging');
+    cards().forEach(c => c.classList.remove('bm-drop-target'));
+    touchActive = false; dragged = null;
+  });
+}
+
 Views.library = async function (view, my, tab) {
   Header.sub('Library', { search: true });
   /* Level 2 (drill-down) when both tab=hist and a key param are present */
   const drillKey = (tab === 'hist') ? (Router.parse().query.get('key') || '') : '';
+  /* v1.0.2: ?status= filter for the Bookmarks tab. */
+  if (Router.parse().query.get('status')) {
+    Store.setSettings({ libraryBmFilter: Router.parse().query.get('status') });
+  }
   const root = h('div', { class: 'wrap' });
   /* Tabs: while drilling in, switch back to History tab highlight */
   const onHist = tab === 'hist';
-  const favTab = h('button', { class: 'tab' + (!onHist ? ' on' : '') }, ic('star'), 'Favorites');
+  const favTab = h('button', { class: 'tab' + (!onHist ? ' on' : '') }, ic('bookmark'), 'Bookmarks');
   const histTab = h('button', { class: 'tab' + (onHist ? ' on' : '') }, ic('history'), 'History');
   favTab.addEventListener('click', () => go('/library?tab=fav'));
   histTab.addEventListener('click', () => go('/library?tab=hist'));
@@ -2259,29 +2909,8 @@ Views.library = async function (view, my, tab) {
   view.replaceChildren(root);
 
   if (tab !== 'hist') {
-    /* Favorites tab — unchanged */
-    const favs = Store.favs;
-    if (!favs.length) {
-      body.append(emptyState('star', 'No favorites yet', 'Tap the star on any title to keep it here for quick access.',
-        h('button', { class: 'btn btn--acc', onclick: () => go('/') }, ic('search'), 'Find something to watch')));
-    } else {
-      const grid = h('div', { class: 'grid' });
-      for (const f of favs) {
-        const c = animeCard(f);
-        c.setAttribute('data-aos', 'fade-up');
-        const rm = h('button', { class: 'icbtn', 'aria-label': 'Remove favorite', style: 'position:absolute;top:6px;right:6px;width:34px;height:34px;border-radius:10px;background:rgba(8,6,4,.8)' }, ic('x'));
-        rm.addEventListener('click', e => {
-          e.stopPropagation();
-          Store.toggleFav(f);
-          toast('Removed from favorites');
-          Router.render();
-        });
-        $('.hposter', c).style.position = 'relative';
-        $('.hposter', c).append(rm);
-        grid.append(c);
-      }
-      body.append(grid);
-    }
+    /* v1.0.2: Bookmarks tab — entries grouped by status with filter chips. */
+    renderBookmarksTab(body);
   } else if (drillKey) {
     /* Level 2 — drill-down for one anime */
     renderHistoryGroupDrill(body, drillKey);
@@ -2293,7 +2922,7 @@ Views.library = async function (view, my, tab) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.0 — views: details ================= */
+/* ================= AniKuoshi v1.0.4 — views: details ================= */
 'use strict';
 
 const GROUP_LABEL = {
@@ -2356,17 +2985,19 @@ Views.details = async function (view, my, key) {
   const a = data.anime || {};
   const favCard = { key: a.key, slug: a.slug, title: bestTitle(a), poster: a.poster, type: a.type, year: a.year };
 
-  const paintStar = on => {
-    const hs = $('#hdStar');
-    if (hs) hs.classList.toggle('star-on', on);
+  /* v1.0.3: paintBookmark updates ONLY the details-page bookmark button (#dStar). */
+  const paintBookmark = (status) => {
+    const on = !!status;
     const ds = $('#dStar');
-    if (ds) { ds.classList.toggle('on', on); ds.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+    if (!ds) return;
+    ds.classList.toggle('on', on);
+    ds.setAttribute('aria-pressed', on ? 'true' : 'false');
+    ds.classList.remove('status-watching', 'status-planning', 'status-completed', 'status-paused', 'status-dropped');
+    if (on && status) ds.classList.add('status-' + status);
+    ds.replaceChildren(ic(on ? ((BOOKMARK_STATUS_BY_ID[status] || {}).icon || 'bookmark') : 'star'));
   };
-  Header.sub(bestTitle(a), {
-    starKey: a.key, starCard: favCard,
-    onStar: on => { paintStar(on); toast(on ? 'Added to favorites' : 'Removed from favorites'); }
-  });
-  paintStar(Store.isFav(a.key));
+  Header.sub(bestTitle(a), { search: true });
+  paintBookmark(Store.bookmarkStatus(a.key));
 
   const kind = statusKind(a.status);
   const seasonTxt = (a.season ? a.season.charAt(0) + a.season.slice(1).toLowerCase() + ' ' : '') + (a.year || '');
@@ -2402,8 +3033,23 @@ Views.details = async function (view, my, key) {
   } else {
     cta = h('button', { class: 'btn btn--acc btn--lg', onclick: () => go(watchRouteFor(a, 1)) }, ic('play'), 'Watch EP 1');
   }
-  const dStar = h('button', { class: 'icbtn' + (Store.isFav(a.key) ? ' on' : ''), id: 'dStar', 'aria-label': 'Toggle favorite', 'aria-pressed': 'false',
-    onclick: () => { const on = Store.toggleFav(favCard); paintStar(on); toast(on ? 'Added to favorites' : 'Removed from favorites'); } }, ic('star'));
+  /* v1.0.2/v1.0.3: Details page bookmark button — opens the BookmarkMenu dropdown. */
+  const dStarInitialState = Store.bookmarkStatus(a.key);
+  const dStar = h('button', {
+    class: 'icbtn' + (dStarInitialState ? ' on status-' + dStarInitialState : ''),
+    id: 'dStar',
+    'aria-label': 'Bookmark',
+    'aria-pressed': dStarInitialState ? 'true' : 'false',
+    title: 'Bookmark',
+    onclick: (e) => {
+      const btn = e.currentTarget;
+      BookmarkMenu.open({
+        anchor: btn,
+        card: favCard,
+        onPick: (status) => { paintBookmark(status); }
+      });
+    }
+  }, ic(dStarInitialState ? ((BOOKMARK_STATUS_BY_ID[dStarInitialState] || {}).icon || 'bookmark') : 'star'));
 
   const genres = (a.genres || []).filter(Boolean);
   const syn = stripHtml(a.synopsis || a.description || '');
@@ -2698,7 +3344,7 @@ Views.details = async function (view, my, key) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.0 — watch view + player ================= */
+/* ================= AniKuoshi v1.0.4 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -2785,6 +3431,17 @@ function createPlayer(box, ui) {
     box.classList.add('player');
     P.video = h('video', { playsinline: true, 'webkit-playsinline': true, preload: 'auto', crossorigin: 'anonymous', style: 'display:none' });
     P.iframe = h('iframe', { allow: 'autoplay; fullscreen; encrypted-media; picture-in-picture', allowfullscreen: true, tabindex: '-1', style: 'display:none' });
+    /* v1.0.1: Cross-origin iframes swallow keydown events when they have focus.
+       When the user clicks the embed player (to play/pause), the iframe would
+       normally gain focus — and then N/P/Space/C/F keyboard shortcuts fired
+       on the PARENT document stop receiving keydown events entirely. Fix:
+       intercept `mousedown` on the iframe and call preventDefault(). This
+       blocks the default focus-on-click behavior, but `click` events still
+       fire normally so the embed player's own play/pause/click handling keeps
+       working. The parent document retains keyboard focus, so N/P episode
+       shortcuts continue to work even while the user is interacting with the
+       embed. */
+    P.iframe.addEventListener('mousedown', (e) => { e.preventDefault(); });
     dom.load = h('div', { class: 'pload' }, h('span', { class: 'dots dots--lg' }, h('i'), h('i'), h('i')), h('span', { class: 'pl-txt', text: 'Resolving stream' }));
     const cpBtn = h('button', { class: 'cp-btn', 'aria-label': 'Play or pause' }, ic('play'));
     cpBtn.addEventListener('click', (e) => {
@@ -2888,6 +3545,11 @@ const hideLoad = () => {
    Works in BOTH Direct and Embed modes (the modal overlays the whole player). */
 function showResumePrompt(savedPos, savedProg, onContinue, onFresh) {
   if (!dom.resume) { onContinue && onContinue(); return; }
+  /* v1.0.4: If the user has disabled the resume prompt, skip it entirely. */
+  if (Store.settings.askResume === false) {
+    onContinue && onContinue();
+    return;
+  }
   /* Hide the loading overlay while the modal is up */
   hideLoad();
   /* Pause any current playback (Direct mode) */
@@ -2897,11 +3559,22 @@ function showResumePrompt(savedPos, savedProg, onContinue, onFresh) {
     h('p', { text: 'You were at ' + fmtTime(savedPos) + (savedProg && savedProg.dur ? ' of ' + fmtTime(savedProg.dur) : '') + ' in this episode.' }),
     h('div', { class: 'resume-actions' },
       h('button', { class: 'btn btn--acc btn--lg', style: 'min-height:42px;padding:0 18px;font-size:13.5px',
-        onclick: () => { dom.resume.classList.remove('show'); onContinue && onContinue(); }
+        onclick: () => {
+          /* v1.0.4: If checkbox is ticked, persist "don't ask again" */
+          const cb = $('.resume-dontask input', dom.resume);
+          if (cb && cb.checked) Store.setSettings({ askResume: false });
+          dom.resume.classList.remove('show');
+          onContinue && onContinue();
+        }
       }, ic('play', 16), 'Continue from ' + fmtTime(savedPos)),
       h('button', { class: 'btn btn--line', style: 'min-height:42px;padding:0 16px;font-size:13.5px',
         onclick: () => { dom.resume.classList.remove('show'); onFresh && onFresh(); }
       }, ic('refresh', 16), 'Start fresh')
+    ),
+    /* v1.0.4: "Don't ask again" checkbox */
+    h('label', { class: 'resume-dontask' },
+      h('input', { type: 'checkbox' }),
+      h('span', { text: 'Don\'t ask again — always continue from saved position' })
     )
   );
   dom.resume.classList.add('show');
@@ -3000,6 +3673,23 @@ function syncCenter() {
 
     /* ---- Auto-next countdown pill (15s before end) ---- */
     updateNextPill();
+
+    /* v1.0.3: Preload the next episode stream ~60s before the current ends. */
+    if (!P._preloadedNext && v.duration && v.currentTime > 1) {
+      const remaining = v.duration - v.currentTime;
+      if (remaining <= 60 && remaining > 2) {
+        if (ui.hasNext && ui.hasNext() && ui.peekNext) {
+          const nextEp = ui.peekNext();
+          if (nextEp && nextEp.number != null) {
+            P._preloadedNext = true;
+            WatchCore.resolve(
+              P.state.key, String(nextEp.number),
+              Store.settings.prov || null, Store.settings.type || null, {}
+            ).then(() => { /* preloaded */ }).catch(() => { P._preloadedNext = false; });
+          }
+        }
+      }
+    }
 
     if (v.duration && Date.now() - P.lastSave > 4000) {
       P.lastSave = Date.now();
@@ -3239,6 +3929,9 @@ function syncCenter() {
     P.video.style.display = '';
     P.video.muted = !!Store.settings.muted;
     P.video.playbackRate = P.rate;
+    /* v1.0.4: Restore saved volume (not just mute state). */
+    const savedVol = Store.settings.volume != null ? Store.settings.volume : 1;
+    P.video.volume = Math.max(0, Math.min(1, savedVol));
     showLoad('Loading stream');
     const src = directSrc(st);
     const subs = (st.subtitles || []).filter(s => s && s.url).slice(0, 12);
@@ -3315,7 +4008,12 @@ function syncCenter() {
     }
     const idx = track ? P.tracks.findIndex(t => t.el.track === track) : -1;
     P._subChoice = idx;
-    if (!track || idx >= 0) Store.setSettings({ subIdx: idx });
+    /* v1.0.4: Save the language code, not the index. The index breaks when
+       switching between sub and dub anime (different track lists). The
+       language code (e.g. 'en') matches reliably across episodes. */
+    const lang = track ? (track.language || track.srclang || '') : '';
+    const langCode = lang ? String(lang).slice(0, 5).toLowerCase() : '';
+    Store.setSettings({ subIdx: idx, subLang: langCode || null });
     buildCcMenu();
   }
   const enforceSingleSub = (skipMenu) => {
@@ -3350,7 +4048,16 @@ function syncCenter() {
     });
 
     let pick = -1;
-    if (preferLabel) pick = P.tracks.findIndex(t => t.label.toLowerCase().includes(String(preferLabel).toLowerCase()));
+    /* v1.0.4: Prefer saved language code over index. Falls back to English,
+       then to the saved index, then to the first track. */
+    const savedLang = Store.settings.subLang;
+    if (savedLang) {
+      pick = P.tracks.findIndex(t => {
+        const tl = (t.srclang || '').toLowerCase();
+        return tl === savedLang || tl.startsWith(savedLang.slice(0, 2));
+      });
+    }
+    if (preferLabel && pick < 0) pick = P.tracks.findIndex(t => t.label.toLowerCase().includes(String(preferLabel).toLowerCase()));
     if (pick < 0 && P._subChoice != null && P._subChoice >= 0 && P._subChoice < P.tracks.length) pick = P._subChoice;
     if (pick < 0) pick = P.tracks.findIndex(t => /^en(glish)?/i.test(t.label) || t.srclang === 'en');
     if (pick < 0 && P._subChoice !== -1) pick = 0;
@@ -3418,7 +4125,8 @@ function syncCenter() {
     v.addEventListener('timeupdate', updTime);
     v.addEventListener('progress', updTime);
     v.addEventListener('volumechange', () => {
-      Store.setSettings({ muted: v.muted });
+      /* v1.0.4: Persist volume level too, not just mute state. */
+      Store.setSettings({ muted: v.muted, volume: v.volume });
       const volBtn = dom.topControls.querySelector('.pcbtn[aria-label="Mute"]');
       if (volBtn) volBtn.replaceChildren(ic(v.muted || !v.volume ? 'mute' : 'vol'));
     });
@@ -3726,6 +4434,7 @@ function syncCenter() {
       P.state.key = key; P.state.ep = ep; P.state.prov = prov || null; P.state.type = type || null;
       P.resumed = false; P.retryCount = 0;
       P._nextCancelled = false;
+      P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
       buildSpeedMenu();
       showLoad('Resolving stream');
       /* Always look up saved progress so the resume modal shows even if the
@@ -3771,6 +4480,7 @@ function syncCenter() {
       P.resumed = false; P.retryCount = 0;
       P._justSwitched = true;
       P._wasFullscreen = this.isFullscreen();
+      P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
       dom.err.classList.remove('show');
       dom.end.classList.remove('show');
       hideNextPill();
@@ -3784,7 +4494,7 @@ function syncCenter() {
       }
       const effectiveResumeAt = resumeAt || 0;
       const showResumeModal = savedProg && savedProg.pos >= 20 && effectiveResumeAt >= 20;
-      showLoad('Loading next episode');
+      showLoad('Loading EP ' + ep);  /* v1.0.1: neutral text works for both N (next) and P (prev) */
       return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
         if (P.destroyed) return;
         /* If we have saved progress, show the resume modal BEFORE playback starts.
@@ -3860,7 +4570,7 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi v1.0.0 — watch view ================= */
+/* ================= AniKuoshi v1.0.4 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
@@ -3914,6 +4624,22 @@ Views.watch = async function (view, my, key, epRaw) {
   function saveProgress(pos, dur, immediate) {
     if (!uiState.anime) return;
     Store.setProg(key, ep, pos, dur);
+    /* v1.0.4: Auto-mark Completed when finishing the last episode. */
+    if (dur && pos >= dur * 0.96) {
+      /* Check if this is the last episode */
+      const list = uiState.episodes;
+      const isLast = list.length > 0 && Number(ep) === Number(list[list.length - 1].number);
+      if (isLast) {
+        const curStatus = Store.bookmarkStatus(key);
+        if (curStatus === 'watching') {
+          /* Build a minimal card so setBookmark has the fields it needs */
+          const a = uiState.anime;
+          const card = { key, slug: a.slug, title: bestTitle(a), poster: a.poster, type: a.type, year: a.year };
+          Store.setBookmark(card, 'completed');
+          toast('Marked as Completed');
+        }
+      }
+    }
     Store.upsertHist({
       key, slug: uiState.anime.slug, title: bestTitle(uiState.anime), poster: uiState.anime.poster,
       thumb: uiState.epObj && uiState.epObj.thumbnail, epTitle: uiState.epObj && uiState.epObj.title,
@@ -4137,6 +4863,17 @@ Views.watch = async function (view, my, key, epRaw) {
   uiState.title = anime ? bestTitle(anime) : key;
   Header.sub(uiState.title, { search: true });
 
+  /* v1.0.2: Mark this episode as "currently watching" IMMEDIATELY so the
+     Continue Watching shelf on / reflects it. Previously the entry was only
+     added when saveProgress() fired, which never happens in Embed mode. */
+  if (anime) {
+    Store.upsertHist({
+      key, slug: anime.slug, title: bestTitle(anime), poster: anime.poster,
+      thumb: null, epTitle: null,
+      ep: Number(ep), pos: 0, dur: 0, type: anime.type, year: anime.year
+    });
+  }
+
   const entryPromise = player.open(key, ep, Store.settings.prov || null, Store.settings.type || null,
     (() => { const p = Store.getProg(key, ep); return p && p.pos >= 20 && (!p.dur || p.pos < p.dur * 0.96) ? p.pos : 0; })());
 
@@ -4201,8 +4938,25 @@ Views.watch = async function (view, my, key, epRaw) {
   if (!localStorage.getItem('anikuoshi:kbdhint')) main.append(kbdHint);
 
   /* ---------- episodes (horizontal row) ---------- */
+  /* v1.0.4: Episodes section with a # jump input for long-running shows. */
+  const epJumpInput = h('input', { type: 'number', class: 'ep-jump-input', min: '1', placeholder: '#', 'aria-label': 'Jump to episode number', title: 'Jump to episode' });
+  epJumpInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const n = parseInt(epJumpInput.value, 10);
+    if (!n || n < 1) return;
+    const list = uiState.episodes;
+    if (!list.length) return;
+    const target = list.find(eo => Number(eo.number) === n);
+    if (target) {
+      e.preventDefault();
+      changeEpisode(target);
+      epJumpInput.blur();
+    } else {
+      toast('Episode ' + n + ' not found');
+    }
+  });
   const epSec = h('section', { class: 'sec', 'data-aos': 'fade-up' },
-    h('h2', null, ic('tv'), 'Episodes', h('span', { class: 'sub', style: 'font-size:12px;color:var(--faint);font-weight:400;margin-left:auto', text: '' })),
+    h('h2', null, ic('tv'), 'Episodes', h('span', { class: 'sub', style: 'font-size:12px;color:var(--faint);font-weight:400;margin-left:auto', text: '' }), epJumpInput),
     h('div', { class: 'ep-row' }));
   const epRow = $('.ep-row', epSec);
   const epCountEl = $('.sub', epSec);
@@ -4381,6 +5135,24 @@ Views.watch = async function (view, my, key, epRaw) {
   if (window.AOS) AOS.refresh();
 };
 
+/* v1.0.4: Global '/' keyboard shortcut to focus the search input from any page.
+   Pressing '/' (when not already typing in an input) finds the nearest search
+   input on the page and focuses it. Press Esc to blur.                     */
+window.addEventListener('keydown', (e) => {
+  if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+  const tag = document.activeElement && document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  /* Don't intercept if a modal is open */
+  const modalOpen = document.querySelector('.modal.open') || document.querySelector('.bm-pop');
+  if (modalOpen) return;
+  const input = document.querySelector('.searchbar input, input[type="search"]');
+  if (input) {
+    e.preventDefault();
+    input.focus();
+    if (input.select) input.select();
+  }
+});
+
 /* ================= boot ================= */
 /* ---------- Input modality tracker ----------
    Browsers heuristically apply :focus-visible to tabindex=0 elements on
@@ -4421,6 +5193,7 @@ window.addEventListener('online', () => toast('Back online'));
 applyTheme();           /* apply saved accent + title-lang before first paint */
 Changelog.init();
 Settings.init();
+ConfirmDialog.init();   /* v1.0.2: custom confirm dialog */
 if (window.AOS) {
   AOS.init({
     duration: 600,
