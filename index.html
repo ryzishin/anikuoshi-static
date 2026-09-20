@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi v1.0.4 — a clean, fast way to watch anime. Search, discover, and stream.">
-<meta name="version" content="1.0.4">
+<meta name="description" content="AniKuoshi v1.0.5 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.5">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi v1.0.4 design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0.5 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -580,15 +580,34 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .toggle-chip:active{transform:scale(.96)}
 .toggle-chip.on{background:var(--accsoft);border-color:rgba(245,165,36,.55);color:var(--acc)}
 .toggle-chip svg.ic{width:14px;height:14px;flex:none}
-/* Mobile: icon-only chips in a symmetric 4-column grid */
+/* v1.0.5: Mobile toggles now show short text labels instead of icon-only.
+   On mobile, the full label is hidden and a short label (from data-short)
+   is shown via ::after. This makes each toggle identifiable at a glance.    */
 @media(max-width:560px){
   .watch-toggles{gap:6px}
-  .toggle-chip{flex:1 1 calc(25% - 6px);min-height:38px;padding:0 4px;font-size:0;gap:0}
-  .watch-toggles .toggle-chip svg.ic{width:18px !important;height:18px !important}
-  .toggle-chip.on::after{content:"";position:absolute;bottom:-1px;left:25%;right:25%;height:2px;background:var(--acc);border-radius:2px}
+  .toggle-chip{flex:1 1 calc(25% - 6px);min-height:50px;padding:4px 2px;flex-direction:column;gap:3px;font-size:0;line-height:1;position:relative}
+  .watch-toggles .toggle-chip svg.ic{width:16px !important;height:16px !important}
+  /* Hide the full text label on mobile (font-size:0 above already does this) */
+  .toggle-chip::after{content:attr(data-short);font-size:9px;font-weight:700;letter-spacing:.02em;color:inherit;white-space:nowrap}
+  .toggle-chip.on::before{content:"";position:absolute;bottom:-1px;left:25%;right:25%;height:2px;background:var(--acc);border-radius:2px}
 }
 .ep-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ep-row::-webkit-scrollbar{display:none}
+/* v1.0.5: Episode grid for long-running shows. Switches from horizontal
+   scroll to a wrapping grid when there are many episodes (50+). The grid
+   uses smaller cards so 1000+ episodes fit on screen without endless scroll. */
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));gap:10px;padding:2px 2px 10px}
+.ep-grid .ep-card-sm{width:auto;flex:none;scroll-snap-align:none}
+.ep-grid .ep-card-sm .epthumb{display:none}  /* hide thumbnails in grid mode to save space */
+.ep-grid .ep-card-sm .epname{padding:10px 12px;min-height:44px;display:flex;align-items:center;-webkit-line-clamp:2}
+.ep-grid .ep-card-sm .epnum{position:static;display:inline-block;background:var(--bg4);color:var(--txt);border-radius:6px;padding:2px 8px;font-size:10px;margin-bottom:6px}
+.ep-grid .ep-card-sm.cur .epnum{background:var(--acc);color:#20180a}
+.ep-grid-empty{padding:24px;text-align:center;color:var(--faint);font-size:13px}
+/* Filter input in the Episodes header — wider than the old jump input */
+.ep-filter-input{width:120px;height:34px;background:var(--bg3);border:1px solid var(--line2);border-radius:8px;color:var(--txt);
+  font-family:var(--mono);font-size:12.5px;padding:0 10px;outline:none;transition:border-color .15s var(--ease),box-shadow .15s var(--ease)}
+.ep-filter-input::placeholder{color:var(--faint)}
+.ep-filter-input:focus{border-color:rgba(245,165,36,.6);box-shadow:0 0 0 3px rgba(245,165,36,.12)}
 .ep-card-sm{width:140px;flex:none;scroll-snap-align:start;cursor:pointer;border-radius:11px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);position:relative;transition:transform .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease)}
 .ep-card-sm:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow-soft)}
 .ep-card-sm:active{transform:scale(.98)}
@@ -916,7 +935,7 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
   <div class="modal-card">
     <div class="modal-hd">
       <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
-      <span class="ver-tag">v1.0.4</span>
+      <span class="ver-tag">v1.0.5</span>
       <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-bd" id="clBody"></div>
@@ -940,10 +959,10 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi v1.0.4 — core ================= */
+/* ================= AniKuoshi v1.0.5 — core ================= */
 'use strict';
 
-const APP_VERSION = '1.0.4';
+const APP_VERSION = '1.0.5';
 const API_BASE = 'https://apikuoshi-v2.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1781,6 +1800,18 @@ const Changelog = {
     this.modal = $('#changelogModal');
     this.body = $('#clBody');
     this.body.replaceChildren(
+      /* ---------- v1.0.5 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.5', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Mobile toggle labels.'), ' The Auto-next / Auto-skip OP / Auto-skip ED / Auto-play toggles were icon-only on mobile, making them impossible to tell apart. Each toggle now shows a short text label (Next, Skip OP, Skip ED, Play) below the icon so the user knows which is which.')),
+          h('li', null, h('span', null, h('b', null, 'Episode grid for long shows.'), ' Shows with 50+ episodes now render as a wrapping grid instead of a horizontal scroll row. One Piece (1000+ eps) is finally browsable — no more endless scrolling through a single row of cards.')),
+          h('li', null, h('span', null, h('b', null, 'Episode filter (not jump).'), ' The # input in the Episodes header is now a filter, not a jump. Type "11" to see EP 11, 111, 211, and any episode whose title contains "11". Click a filtered card to navigate. Clear the filter to see all episodes again.')),
+          h('li', null, h('span', null, h('b', null, 'Resume modal only fires with real progress.'), ' The resume prompt now requires actual progress (position >= 20s AND a real duration > 1s). Episodes that were just opened (prog entry with pos=0) no longer trigger the modal.')),
+          h('li', null, h('span', null, h('b', null, 'Resume modal cancelled on episode switch.'), ' Previously, if the resume modal was showing for EP 2 and the user switched to EP 5, the old modal\'s "Continue" callback would fire and load EP 2 — overriding the switch. Now a switch-generation counter cancels stale resume modals: the moment you switch episodes, any open resume modal is dismissed and its callbacks are no-ops.'))
+        )
+      ),
+
       /* ---------- v1.0.4 patch notes ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('refresh', 14), 'v1.0.4', h('span', { class: 'n', text: 'Patch notes' })),
@@ -1873,7 +1904,7 @@ const Changelog = {
       /* ---------- Credits ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('info', 14), 'Credits'),
-        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.4 · RYZISHIN. Streaming metadata and playback provided by <a href="https://apikuoshi-v2.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.5 · RYZISHIN. Streaming metadata and playback provided by <a href="https://apikuoshi-v2.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
       )
     );
     $('#clClose').addEventListener('click', () => Changelog.close());
@@ -2262,7 +2293,7 @@ const Settings = {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.4 — views: home / search / library ================= */
+/* ================= AniKuoshi v1.0.5 — views: home / search / library ================= */
 'use strict';
 
 /* ---------- live suggestions ---------- */
@@ -2922,7 +2953,7 @@ Views.library = async function (view, my, tab) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.4 — views: details ================= */
+/* ================= AniKuoshi v1.0.5 — views: details ================= */
 'use strict';
 
 const GROUP_LABEL = {
@@ -3344,7 +3375,7 @@ Views.details = async function (view, my, key) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.4 — watch view + player ================= */
+/* ================= AniKuoshi v1.0.5 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -3423,6 +3454,12 @@ function createPlayer(box, ui) {
     /* Was the player fullscreen when an episode switch / server switch started?
        Used to know whether to re-enter fullscreen after the new stream loads. */
     _wasFullscreen: false,
+    /* v1.0.5: Switch generation counter. Incremented every time open() or
+       switchEpisode() is called. The resume modal's callbacks capture the
+       generation and bail out if it's stale — this prevents a stale resume
+       modal (from a previous episode) from calling load() with the old entry
+       after the user has already switched to a different episode.            */
+    _switchGen: 0,
     el: {}
   };
 
@@ -4435,24 +4472,33 @@ function syncCenter() {
       P.resumed = false; P.retryCount = 0;
       P._nextCancelled = false;
       P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
+      /* v1.0.5: Bump switch generation + dismiss any stale resume modal. */
+      const myGen = ++P._switchGen;
+      if (dom.resume) dom.resume.classList.remove('show');
       buildSpeedMenu();
       showLoad('Resolving stream');
-      /* Always look up saved progress so the resume modal shows even if the
-         caller already passed a resumeAt (the watch view does this).            */
+      /* v1.0.5: Only show resume modal if there's ACTUAL progress (pos >= 20s
+         AND a real duration). Previously, a prog entry with pos=0 (from the
+         "Start fresh" callback) could still trigger the modal if the user
+         navigated away and back. Now we require both pos and dur to be real. */
       let savedProg = null;
       try { savedProg = Store.getProg(key, String(ep)); } catch (e) { savedProg = null; }
-      if (!resumeAt && savedProg && savedProg.pos >= 20 && (!savedProg.dur || savedProg.pos < savedProg.dur * 0.96)) {
+      const hasRealProgress = savedProg && savedProg.pos >= 20 && savedProg.dur > 1 && savedProg.pos < savedProg.dur * 0.96;
+      if (!resumeAt && hasRealProgress) {
         resumeAt = savedProg.pos;
       }
       const effectiveResumeAt = resumeAt || 0;
-      const showResumeModal = savedProg && savedProg.pos >= 20 && effectiveResumeAt >= 20;
+      const showResumeModal = hasRealProgress && effectiveResumeAt >= 20;
       return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
-        if (P.destroyed) return;
+        if (P.destroyed || myGen !== P._switchGen) return;  /* v1.0.5: stale — user switched away */
         if (showResumeModal && dom.resume) {
           showResumePrompt(effectiveResumeAt, savedProg, () => {
+            /* v1.0.5: Bail if the user switched episodes while the modal was open. */
+            if (myGen !== P._switchGen) return;
             P.resumeAt = effectiveResumeAt;
             load(entry, {});
           }, () => {
+            if (myGen !== P._switchGen) return;
             P.resumeAt = 0;
             try { Store.setProg(key, String(ep), 0, savedProg ? savedProg.dur : 0); } catch (e) { }
             load(entry, {});
@@ -4463,7 +4509,7 @@ function syncCenter() {
         }
         return entry;
       }).catch(e => {
-        if (P.destroyed) return;
+        if (P.destroyed || myGen !== P._switchGen) return;
         if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'resolve');
       });
     },
@@ -4481,30 +4527,43 @@ function syncCenter() {
       P._justSwitched = true;
       P._wasFullscreen = this.isFullscreen();
       P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
+      /* v1.0.5: Bump switch generation + dismiss any stale resume modal.
+         This is the KEY fix: if a previous switchEpisode's resume modal is
+         still showing, its callbacks would fire load() with the OLD entry
+         after the user has already switched. By bumping the generation here,
+         those stale callbacks will bail out (myGen !== P._switchGen). */
+      const myGen = ++P._switchGen;
+      if (dom.resume) dom.resume.classList.remove('show');
       dom.err.classList.remove('show');
       dom.end.classList.remove('show');
       hideNextPill();
       P._nextCancelled = false;
-      /* Always look up saved progress so we can show the resume modal even
-         when changeEpisode already passed a resumeAt.                          */
+      /* v1.0.5: Only show resume modal if there's ACTUAL progress (pos >= 20s
+         AND a real duration > 1s). This prevents the modal from firing for
+         episodes that were just opened (prog entry with pos=0 from the
+         "Start fresh" callback, or no prog entry at all). */
       let savedProg = null;
       try { savedProg = Store.getProg(key, String(ep)); } catch (e) { savedProg = null; }
-      if (!resumeAt && savedProg && savedProg.pos >= 20 && (!savedProg.dur || savedProg.pos < savedProg.dur * 0.96)) {
+      const hasRealProgress = savedProg && savedProg.pos >= 20 && savedProg.dur > 1 && savedProg.pos < savedProg.dur * 0.96;
+      if (!resumeAt && hasRealProgress) {
         resumeAt = savedProg.pos;
       }
       const effectiveResumeAt = resumeAt || 0;
-      const showResumeModal = savedProg && savedProg.pos >= 20 && effectiveResumeAt >= 20;
+      const showResumeModal = hasRealProgress && effectiveResumeAt >= 20;
       showLoad('Loading EP ' + ep);  /* v1.0.1: neutral text works for both N (next) and P (prev) */
       return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
-        if (P.destroyed) return;
+        if (P.destroyed || myGen !== P._switchGen) return;  /* v1.0.5: stale — user switched away */
         /* If we have saved progress, show the resume modal BEFORE playback starts.
            The modal blocks autoplay; the user picks Continue / Start fresh.          */
         if (showResumeModal && dom.resume) {
           showResumePrompt(effectiveResumeAt, savedProg, () => {
+            /* v1.0.5: Bail if the user switched episodes while the modal was open. */
+            if (myGen !== P._switchGen) return;
             /* Continue */
             P.resumeAt = effectiveResumeAt;
             load(entry, {});
           }, () => {
+            if (myGen !== P._switchGen) return;
             /* Start fresh */
             P.resumeAt = 0;
             try { Store.setProg(key, String(ep), 0, savedProg ? savedProg.dur : 0); } catch (e) { }
@@ -4516,7 +4575,8 @@ function syncCenter() {
         }
         return entry;
       }).catch(e => {
-        if (!P.destroyed) { if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'switch'); }
+        if (P.destroyed || myGen !== P._switchGen) return;
+        if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'switch');
       });
     },
     switchServer(prov, type, resumeAt) {
@@ -4570,7 +4630,7 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi v1.0.4 — watch view ================= */
+/* ================= AniKuoshi v1.0.5 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
@@ -4883,10 +4943,12 @@ Views.watch = async function (view, my, key, epRaw) {
   chipEmbed = h('button', { class: 'chip', onclick: () => player.setMode('embed') }, ic('ext', 15), 'Embed');
   modeChips = h('div', { class: 'modegrp' }, chipDirect, chipEmbed);
 
-  const togAutoNext = h('button', { class: 'toggle-chip' + (toggles.autoNext ? ' on' : ''), title: 'Auto-next' }, ic('autonext', 14), 'Auto-next');
-  const togAutoSkip = h('button', { class: 'toggle-chip' + (toggles.autoSkip ? ' on' : ''), title: 'Auto-skip Opening' }, ic('skip', 14), 'Auto-skip OP');
-  const togAutoSkipOutro = h('button', { class: 'toggle-chip' + (Store.settings.autoSkipOutro ? ' on' : ''), title: 'Auto-skip Outro' }, ic('skip', 14), 'Auto-skip ED');
-  const togAutoPlay = h('button', { class: 'toggle-chip' + (toggles.autoPlay ? ' on' : ''), title: 'Auto-play' }, ic('autoplay', 14), 'Auto-play');
+  /* v1.0.5: Toggle labels — long on desktop, short on mobile via data-short attr.
+     The mobile CSS shows data-short when available, falls back to the full text. */
+  const togAutoNext = h('button', { class: 'toggle-chip' + (toggles.autoNext ? ' on' : ''), title: 'Auto-next', dataset: { short: 'Next' } }, ic('autonext', 14), 'Auto-next');
+  const togAutoSkip = h('button', { class: 'toggle-chip' + (toggles.autoSkip ? ' on' : ''), title: 'Auto-skip Opening', dataset: { short: 'Skip OP' } }, ic('skip', 14), 'Auto-skip OP');
+  const togAutoSkipOutro = h('button', { class: 'toggle-chip' + (Store.settings.autoSkipOutro ? ' on' : ''), title: 'Auto-skip Outro', dataset: { short: 'Skip ED' } }, ic('skip', 14), 'Auto-skip ED');
+  const togAutoPlay = h('button', { class: 'toggle-chip' + (toggles.autoPlay ? ' on' : ''), title: 'Auto-play', dataset: { short: 'Play' } }, ic('autoplay', 14), 'Auto-play');
   togAutoNext.addEventListener('click', () => {
     const v = !Store.getToggles().autoNext;
     Store.setToggle('autoNext', v);
@@ -4937,28 +4999,17 @@ Views.watch = async function (view, my, key, epRaw) {
     h('span', { class: 'dismiss', onclick: () => { localStorage.setItem('anikuoshi:kbdhint','1'); kbdHint.remove(); } }, 'Dismiss'));
   if (!localStorage.getItem('anikuoshi:kbdhint')) main.append(kbdHint);
 
-  /* ---------- episodes (horizontal row) ---------- */
-  /* v1.0.4: Episodes section with a # jump input for long-running shows. */
-  const epJumpInput = h('input', { type: 'number', class: 'ep-jump-input', min: '1', placeholder: '#', 'aria-label': 'Jump to episode number', title: 'Jump to episode' });
-  epJumpInput.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-    const n = parseInt(epJumpInput.value, 10);
-    if (!n || n < 1) return;
-    const list = uiState.episodes;
-    if (!list.length) return;
-    const target = list.find(eo => Number(eo.number) === n);
-    if (target) {
-      e.preventDefault();
-      changeEpisode(target);
-      epJumpInput.blur();
-    } else {
-      toast('Episode ' + n + ' not found');
-    }
-  });
+  /* ---------- episodes ---------- */
+  /* v1.0.5: Episodes section with a FILTER input (not jump). Type a number or
+     title fragment to filter the list; click an episode card to navigate.
+     For shows with 50+ episodes, render a wrapping grid instead of a horizontal
+     scroll row so 1000+ episodes are browsable without endless scrolling.       */
+  const epFilterInput = h('input', { type: 'search', class: 'ep-filter-input', placeholder: 'Filter episodes', 'aria-label': 'Filter episodes by number or title', enterkeyhint: 'search', autocomplete: 'off' });
+  /* The container that holds either the ep-row (short shows) or ep-grid (long shows). */
+  const epListContainer = h('div');  /* class set after we know episode count */
   const epSec = h('section', { class: 'sec', 'data-aos': 'fade-up' },
-    h('h2', null, ic('tv'), 'Episodes', h('span', { class: 'sub', style: 'font-size:12px;color:var(--faint);font-weight:400;margin-left:auto', text: '' }), epJumpInput),
-    h('div', { class: 'ep-row' }));
-  const epRow = $('.ep-row', epSec);
+    h('h2', null, ic('tv'), 'Episodes', h('span', { class: 'sub', style: 'font-size:12px;color:var(--faint);font-weight:400;margin-left:auto', text: '' }), epFilterInput),
+    epListContainer);
   const epCountEl = $('.sub', epSec);
   if (isSingle) epSec.style.display = 'none';
 
@@ -4985,35 +5036,82 @@ Views.watch = async function (view, my, key, epRaw) {
 
   if (episodes.length) epCountEl.textContent = episodes.length + ' episodes';
 
+  /* v1.0.5: Render episodes into either a horizontal row (short shows <50 eps)
+     or a wrapping grid (long shows 50+ eps). The filter input filters by
+     episode number OR title text — typing "11" shows EP 11, 111, 211, etc.
+     and any episode whose title contains "11". Clicking a card navigates.    */
   if (!isSingle) {
     if (!episodes.length) {
-      epRow.append(h('div', { class: 'eplist-note', text: 'Episode names could not be loaded \u2014 navigation still works with Prev / Next.' }));
+      epListContainer.className = 'ep-row';
+      epListContainer.append(h('div', { class: 'eplist-note', text: 'Episode names could not be loaded \u2014 navigation still works with Prev / Next.' }));
     } else {
-      let currentCard = null;
-      epRow.replaceChildren(...episodes.map(eo => {
+      /* Use grid for 50+ episodes, row for shorter shows */
+      const useGrid = episodes.length >= 50;
+      epListContainer.className = useGrid ? 'ep-grid' : 'ep-row';
+
+      /* Build a card for a single episode (shared between initial render + filter) */
+      function buildEpCard(eo) {
         const cur = Number(eo.number) === Number(ep);
         const p = Store.getProg(key, String(eo.number));
         const pct = p && p.dur ? Math.min(100, Math.round((p.pos / p.dur) * 100)) : 0;
         const finished = pct >= 96;
-        const card = h('div', { class: 'ep-card-sm' + (cur ? ' cur' : ''), dataset: { ep: eo.number }, tabindex: '0', role: 'button' },
+        const card = h('div', { class: 'ep-card-sm' + (cur ? ' cur' : ''), dataset: { ep: eo.number, title: (eo.title || '').toLowerCase(), num: String(eo.number) }, tabindex: '0', role: 'button' },
           h('div', { class: 'epthumb' },
             imgOrPh(eo.thumbnail, '', eo.title || ('Episode ' + eo.number), 'film'),
             h('span', { class: 'epnum', text: 'EP ' + eo.number }),
             finished ? h('span', { class: 'ep-finish', text: 'Finished' }) : null,
             h('div', { class: 'ep-prog', style: 'display:' + (pct && !finished ? '' : 'none') }, h('i', { style: 'width:' + pct + '%' }))),
           h('div', { class: 'epname', text: eo.title || 'Episode ' + eo.number }));
-        /* Episode card click: in-place switch (preserves fullscreen) */
         const openEp = () => changeEpisode(eo);
         card.addEventListener('click', openEp);
         card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEp(); } });
-        if (cur) currentCard = card;
         return card;
-      }));
-      if (currentCard) {
-        requestAnimationFrame(() => {
-          currentCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        });
       }
+
+      /* Render the full list */
+      epListContainer.replaceChildren(...episodes.map(buildEpCard));
+
+      /* Scroll current episode into view (only for row mode; grid mode is too tall) */
+      if (!useGrid) {
+        const curCard = $('.ep-card-sm.cur', epListContainer);
+        if (curCard) {
+          requestAnimationFrame(() => {
+            curCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          });
+        }
+      }
+
+      /* v1.0.5: Filter input — filters by episode number OR title text.
+         Typing "11" shows EP 11, 111, 211... and any episode whose title
+         contains "11". Clicking a filtered card still navigates normally. */
+      let filterTimer = 0;
+      epFilterInput.addEventListener('input', () => {
+        clearTimeout(filterTimer);
+        filterTimer = setTimeout(() => {
+          const q = (epFilterInput.value || '').trim().toLowerCase();
+          if (!q) {
+            /* Show all */
+            epListContainer.replaceChildren(...episodes.map(buildEpCard));
+            return;
+          }
+          /* Filter: number contains q OR title contains q */
+          const filtered = episodes.filter(eo => {
+            const numStr = String(eo.number);
+            const title = (eo.title || '').toLowerCase();
+            /* Number match: episode number contains the query string.
+               e.g. "11" matches EP 11, 111, 211, 1100... */
+            if (numStr.includes(q)) return true;
+            /* Title match */
+            if (title.includes(q)) return true;
+            return false;
+          });
+          if (!filtered.length) {
+            epListContainer.replaceChildren(h('div', { class: 'ep-grid-empty', text: 'No episodes match "' + epFilterInput.value + '"' }));
+          } else {
+            epListContainer.replaceChildren(...filtered.map(buildEpCard));
+          }
+        }, 150);
+      });
     }
   }
 
