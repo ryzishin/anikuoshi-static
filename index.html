@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi v1.0.1 — a clean, fast way to watch anime. Search, discover, and stream.">
-<meta name="version" content="1.0.1">
+<meta name="description" content="AniKuoshi v1.0.0 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.0">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi v1.0.1 design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0.0 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -191,7 +191,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .hcard:hover .hposter{border-color:var(--line2);box-shadow:var(--shadow-soft)}
 .hcard img{width:100%;height:100%;object-fit:cover;transition:transform .35s var(--ease)}
 .hcard:hover img{transform:scale(1.05)}
-.hcard .hcard-title{margin-top:8px;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hcard .hcard-title{margin-top:8px;font-size:13px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;word-break:break-word;min-height:35px}
 .hcard .hcard-meta{margin-top:3px;font-size:11.5px;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hcard .hcard-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(0,0,0,.55)}
 .hcard .hcard-prog i{display:block;height:100%;background:var(--acc)}
@@ -199,7 +199,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 .imph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#57503f;background:var(--bg3)}
 .hcard.relcard{width:150px}
 .hcard.relcard .hposter{width:150px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px;margin:16px 0}
 .grid .hcard{width:auto}
 .pager{display:flex;align-items:center;justify-content:center;gap:14px;padding:22px 0 10px}
 .pager span{color:var(--faint);font-size:13px;min-width:64px;text-align:center}
@@ -501,7 +501,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 
 /* ---------- responsive ---------- */
 @media(min-width:640px){
-  .grid{grid-template-columns:repeat(4,1fr);gap:18px 12px}
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px 12px}
   .epgrid{grid-template-columns:repeat(3,1fr);gap:14px 12px}
   .dhero{min-height:300px}
   .dbody{margin-top:-120px}
@@ -512,7 +512,7 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 }
 @media(min-width:980px){
   body{font-size:15.5px}
-  .grid{grid-template-columns:repeat(6,1fr)}
+  .grid{grid-template-columns:repeat(6,minmax(0,1fr))}
   .epgrid{grid-template-columns:repeat(4,1fr)}
   .dhero{min-height:360px}
   .dbody{margin-top:-150px}
@@ -540,11 +540,18 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 /* ---------- watch page new styles ---------- */
 .watch-toggles{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .toggle-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 13px;border-radius:10px;border:1px solid var(--line2);
-  background:var(--bg3);color:var(--faint);font-size:12px;font-weight:650;letter-spacing:.02em;white-space:nowrap;transition:all .15s var(--ease);cursor:pointer}
+  background:var(--bg3);color:var(--faint);font-size:12px;font-weight:650;letter-spacing:.02em;white-space:nowrap;transition:all .15s var(--ease);cursor:pointer;flex:1 1 auto;justify-content:center;min-width:0;position:relative}
 .toggle-chip:hover{color:var(--dim);border-color:#4d3f28}
 .toggle-chip:active{transform:scale(.96)}
 .toggle-chip.on{background:var(--accsoft);border-color:rgba(245,165,36,.55);color:var(--acc)}
-.toggle-chip svg.ic{width:14px;height:14px}
+.toggle-chip svg.ic{width:14px;height:14px;flex:none}
+/* Mobile: icon-only chips in a symmetric 4-column grid */
+@media(max-width:560px){
+  .watch-toggles{gap:6px}
+  .toggle-chip{flex:1 1 calc(25% - 6px);min-height:38px;padding:0 4px;font-size:0;gap:0}
+  .watch-toggles .toggle-chip svg.ic{width:18px !important;height:18px !important}
+  .toggle-chip.on::after{content:"";position:absolute;bottom:-1px;left:25%;right:25%;height:2px;background:var(--acc);border-radius:2px}
+}
 .ep-row{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .ep-row::-webkit-scrollbar{display:none}
 .ep-card-sm{width:140px;flex:none;scroll-snap-align:start;cursor:pointer;border-radius:11px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);position:relative;transition:transform .18s var(--ease),border-color .18s var(--ease),box-shadow .18s var(--ease)}
@@ -608,6 +615,118 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 /* view transition: fade between routes */
 #view{animation:viewIn .25s var(--ease-out) both}
 @keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ============ Title-language subtitle on cards ============ */
+.hcard-sub{margin-top:1px;font-size:11px;color:var(--faint);font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none}
+.hcard[data-has-sub="1"] .hcard-sub{display:block}
+.ep-card-sm .epname-sub,.sugg-meta .sugg-sub{font-size:10.5px;color:var(--faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* When subtitle is hidden by setting, hide everywhere */
+body[data-title-lang="romaji"] .hcard-sub,
+body[data-title-lang="english"] .hcard-sub,
+body[data-title-lang="native"] .hcard-sub{display:none}
+body[data-title-lang="english"] .hcard-title,
+body[data-title-lang="english"] .sugg-title,
+body[data-title-lang="english"] .hr-title,
+body[data-title-lang="english"] .wo-title,
+body[data-title-lang="english"] .pt-title,
+body[data-title-lang="english"] .hd-title,
+body[data-title-lang="english"] .dtitle{font-weight:700}
+body[data-title-lang="english"] .hcard[data-has-sub="1"] .hcard-sub,
+body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
+
+/* ============ Settings modal ============ */
+.settings-section{margin:18px 0;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.settings-section:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.settings-section h3{margin:0 0 12px;font-size:13px;font-weight:750;color:var(--acc);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:7px}
+.settings-section h3 svg.ic{width:14px;height:14px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;min-height:42px}
+.settings-row .lbl{font-size:13.5px;color:var(--txt);font-weight:600;min-width:0;flex:1}
+.settings-row .lbl small{display:block;font-size:11.5px;color:var(--faint);font-weight:400;margin-top:2px}
+.settings-row .ctl{flex:none;display:flex;align-items:center;gap:6px}
+/* Mobile: stack label above control, full-width swatches */
+@media(max-width:560px){
+  .settings-row{flex-direction:column;align-items:stretch;gap:8px}
+  .settings-row .ctl{flex:none;width:100%;justify-content:flex-start;flex-wrap:wrap}
+  .settings-row .lbl{flex:none}
+}
+/* Segmented control */
+.seg{display:inline-flex;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:2px;gap:2px}
+.seg button{padding:7px 12px;border-radius:8px;font-size:12.5px;font-weight:650;color:var(--dim);transition:all .15s var(--ease);min-height:30px}
+.seg button:hover{color:var(--txt)}
+.seg button.on{background:var(--accsoft);color:var(--acc)}
+/* Accent swatches */
+.swatches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.swatch{width:34px;height:34px;border-radius:10px;border:2px solid var(--line2);cursor:pointer;position:relative;transition:transform .15s var(--ease),border-color .15s var(--ease)}
+.swatch:hover{transform:scale(1.08)}
+.swatch.on{border-color:var(--txt)}
+.swatch.on::after{content:"";position:absolute;inset:0;border-radius:8px;border:2px solid rgba(255,255,255,.4);pointer-events:none}
+.swatch.custom{display:flex;align-items:center;justify-content:center;gap:4px;background:linear-gradient(135deg,#ff8589,#ffc25c,#4cc38a,#7fc0ff,#c98bff);color:#fff;font-size:11px;font-weight:700;letter-spacing:.04em;overflow:hidden;padding:0 10px;width:auto;min-width:34px}
+.swatch.custom::before{content:"🎨";font-size:14px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));position:relative;z-index:1}
+/* Custom swatch uses ::after for its label text instead of the white ring */
+.swatch.custom::after{content:"Custom";text-shadow:0 1px 2px rgba(0,0,0,.5);position:relative;z-index:1;background:transparent;border:0}
+.swatch.custom.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.5)}
+.swatch input[type="color"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+/* Mobile: larger touch targets, custom swatch fills available width */
+@media(max-width:560px){
+  .swatch{width:40px;height:40px;border-radius:11px}
+  .swatches{gap:10px;width:100%}
+  .swatch.custom{flex:1 1 auto;min-width:120px;height:40px;border-radius:11px;font-size:12px;padding:0 12px}
+  .swatch.custom::before{font-size:18px}
+}
+/* Range slider */
+.range-wrap{display:flex;align-items:center;gap:10px;min-width:160px}
+.range-wrap input[type="range"]{-webkit-appearance:none;appearance:none;width:120px;height:4px;background:var(--line2);border-radius:4px;outline:none}
+.range-wrap input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;background:var(--acc);border-radius:50%;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.range-wrap input[type="range"]::-moz-range-thumb{width:14px;height:14px;background:var(--acc);border-radius:50%;border:0;cursor:pointer}
+.range-wrap .val{font-family:var(--mono);font-size:12px;color:var(--dim);min-width:36px;text-align:right}
+/* Number input */
+.num-input{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.num-input button{width:32px;height:32px;color:var(--dim);font-size:14px;font-weight:700}
+.num-input button:hover{color:var(--txt);background:var(--bg4)}
+.num-input input{width:54px;text-align:center;background:none;border:0;color:var(--txt);font-family:var(--mono);font-size:13px;padding:0;height:32px}
+.num-input input:focus{outline:none}
+/* Danger button */
+.btn--danger{background:rgba(229,72,77,.12);border:1px solid rgba(229,72,77,.4);color:#ff8589}
+.btn--danger:hover{background:rgba(229,72,77,.2);border-color:rgba(229,72,77,.65)}
+
+/* ============ Skip Outro button ============ */
+.skipbtn.skip-outro{border-color:rgba(127,192,255,.6);color:var(--dub)}
+.skipbtn.skip-outro:hover{background:rgba(20,16,10,.85);border-color:rgba(127,192,255,.85)}
+.skipbtn.skip-outro svg.ic{width:14px;height:14px}
+
+/* ============ Resume modal ============ */
+.resume-modal{position:absolute;inset:0;z-index:14;background:rgba(5,4,2,.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+.resume-modal.show{display:flex;animation:fadeIn .25s var(--ease-out)}
+.resume-modal h3{margin:0;font-size:17px;font-weight:700;color:var(--txt)}
+.resume-modal p{margin:0;font-size:13px;color:var(--dim);max-width:300px;line-height:1.5}
+.resume-modal .resume-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}
+
+/* ============ Auto-next countdown pill ============ */
+.next-pill{position:absolute;right:12px;bottom:74px;z-index:9;background:rgba(12,10,7,.85);border:1px solid rgba(245,165,36,.55);color:var(--acc);
+  border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:650;display:none;align-items:center;gap:9px;backdrop-filter:blur(6px);animation:skipPop .25s var(--ease-spring)}
+.next-pill.show{display:inline-flex}
+.next-pill .np-ring{width:18px;height:18px;flex:none;position:relative}
+.next-pill .np-ring svg{width:18px;height:18px;transform:rotate(-90deg)}
+.next-pill .np-ring circle{fill:none;stroke:rgba(245,165,36,.25);stroke-width:2}
+.next-pill .np-ring .np-prog{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset 1s linear}
+.next-pill .np-text{display:flex;flex-direction:column;gap:1px;line-height:1.2}
+.next-pill .np-text b{font-weight:700;color:var(--txt)}
+.next-pill .np-text span{font-size:10.5px;color:var(--dim)}
+.next-pill .np-cancel{margin-left:6px;color:var(--faint);font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;cursor:pointer;background:rgba(255,255,255,.06)}
+.next-pill .np-cancel:hover{color:var(--txt);background:rgba(255,255,255,.12)}
+
+/* ============ Server health indicator ============ */
+.srv-chip-sm .srv-health,.srvchip .srv-health{display:inline-flex;align-items:center;justify-content:center;width:7px;height:7px;border-radius:50%;margin-left:5px;background:var(--faint);flex:none}
+.srv-chip-sm.on .srv-health,.srvchip.on .srv-health{background:var(--acc)}
+.srv-health.best{background:var(--ok);box-shadow:0 0 6px rgba(76,195,138,.5)}
+.srv-health.warn{background:#ff8589;box-shadow:0 0 6px rgba(255,133,137,.5)}
+
+/* ============ Buffered ranges viz (multi-stripe) ============ */
+.pcbar .ranges{position:absolute;left:0;top:0;bottom:0;width:100%;pointer-events:none}
+.pcbar .range-stripe{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.18);border-radius:0}
+
+/* ============ Subtitle styling (cue) ============ */
+.player video::cue{font-size:var(--cue-size, 18px);line-height:1.4;background:rgba(0,0,0,var(--cue-bg, .65));color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8)}
 </style>
 </head>
 <body>
@@ -655,18 +774,36 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c.5 3-2 4-2 7a2 2 0 0 0 4 0c0-.5.5-.8.5-1.5 1 1.5 2.5 3 2.5 5.5a5 5 0 1 1-10 0c0-3 3-5 5-11z"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 4-4 4h-2a2 2 0 0 0-2 2c0 1 .5 1.5.5 2.5 0 1-1 1.5-2.5 1.5z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="12" cy="7.5" r="1"/><circle cx="16.5" cy="11.5" r="1"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 5v14M7 19h4"/></symbol>
+  <symbol id="i-forward" viewBox="0 0 24 24"><path d="M5 4l10 8-10 8zM15 4v16"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></symbol>
+  <symbol id="i-cc-on" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M10.5 10.2a2.3 2.3 0 1 0 0 3.6M17 10.2a2.3 2.3 0 1 0 0 3.6"/><circle cx="6" cy="18.5" r="1.5" fill="currentColor" stroke="none"/><circle cx="18" cy="18.5" r="1.5" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-gauge-fast" viewBox="0 0 24 24"><path d="M3.5 17.5a8.5 8.5 0 1 1 15 0"/><path d="M12 13.8 16 9.5"/><circle cx="12" cy="14.5" r="1.6"/><path d="M3.5 11h3M4 7l2 1.5"/></symbol>
 </svg>
 
 <header id="hd" class="hd"><div class="hd-in" id="hdIn"></div></header>
 <main id="view" class="view" tabindex="-1"></main>
 <div id="toast" class="toast" role="status"></div>
 
+<!-- Settings modal -->
+<div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="modal-card">
+    <div class="modal-hd">
+      <h2 id="setTitle"><svg class="ic"><use href="#i-settings"/></svg> Settings</h2>
+      <button class="icbtn x" aria-label="Close" id="setClose"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal-bd" id="setBody"></div>
+  </div>
+</div>
+
 <!-- Changelog modal -->
 <div id="changelogModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="clTitle">
   <div class="modal-card">
     <div class="modal-hd">
       <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
-      <span class="ver-tag">v1.0.1</span>
+      <span class="ver-tag">v1.0.0</span>
       <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-bd" id="clBody"></div>
@@ -676,10 +813,10 @@ svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-wid
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi v1.0.1 — core ================= */
+/* ================= AniKuoshi v1.0.0 — core ================= */
 'use strict';
 
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.0';
 const API_BASE = 'https://apikuoshi-v2.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -750,9 +887,40 @@ function decodeEntities(s) {
   t.innerHTML = String(s);
   return t.value;
 }
-function bestTitle(e) {
-  return decodeEntities(e.titleRomaji || e.title || e.titleEnglish || e.titleNative || e.slug || 'Untitled');
+/* Title helpers — respect the user's title-language setting.
+   titleLang values:
+     'both'     → English main title, romaji as subtitle (when distinct)
+     'english'  → English only (fallback to romaji if English is empty)
+     'romaji'   → Romaji only (fallback to English/title if romaji empty) — original behavior
+     'native'   → Native only (fallback to romaji)                                    */
+function titleMain(e) {
+  if (!e) return 'Untitled';
+  const lang = Store.settings.titleLang || 'both';
+  const romaji = decodeEntities(e.titleRomaji || e.title || '');
+  const english = decodeEntities(e.titleEnglish || '');
+  const native = decodeEntities(e.titleNative || '');
+  if (lang === 'english') return english || romaji || native || e.slug || 'Untitled';
+  if (lang === 'native')  return native  || romaji || english || e.slug || 'Untitled';
+  if (lang === 'romaji')  return romaji  || english || native || e.slug || 'Untitled';
+  /* 'both' — English main, fall back to romaji if English empty */
+  return english || romaji || native || e.slug || 'Untitled';
 }
+function titleSub(e) {
+  if (!e) return '';
+  const lang = Store.settings.titleLang || 'both';
+  if (lang !== 'both') return '';
+  const main = titleMain(e);
+  const romaji = decodeEntities(e.titleRomaji || e.title || '');
+  /* If main IS romaji (English was empty), show native as sub if distinct */
+  if (main === romaji) {
+    const native = decodeEntities(e.titleNative || '');
+    return native && native !== main ? native : '';
+  }
+  /* Main is English; show romaji as sub if distinct */
+  return romaji && romaji !== main ? romaji : '';
+}
+/* Back-compat: bestTitle now respects the setting too */
+function bestTitle(e) { return titleMain(e); }
 function secondTitle(e) {
   const main = bestTitle(e);
   const alt = e.titleEnglish && decodeEntities(e.titleEnglish) !== main ? decodeEntities(e.titleEnglish) : (e.titleNative && decodeEntities(e.titleNative) !== main ? decodeEntities(e.titleNative) : '');
@@ -999,7 +1167,18 @@ function categorizeFranchiseEntry(entry, relation) {
 const Store = {
   read(k, d) { try { return JSON.parse(localStorage.getItem('anikuoshi:' + k)) ?? d; } catch (e) { return d; } },
   write(k, v) { try { localStorage.setItem('anikuoshi:' + k, JSON.stringify(v)); } catch (e) { } },
-  get settings() { return Object.assign({ rate: 1, muted: false, mode: 'direct', prov: null, type: null, subIdx: 0, autoNext: false, autoSkip: true, autoPlay: true }, this.read('settings', {})); },
+  get settings() { return Object.assign({
+    rate: 1, muted: false, mode: 'direct', prov: null, type: null, subIdx: 0,
+    autoNext: false, autoSkip: true, autoPlay: true,
+    /* v1.0.0 new settings */
+    titleLang: 'both',        /* both | romaji | english | native */
+    accent: 'amber',          /* amber | sage | sky | coral | lavender | custom */
+    accentCustom: '#f5a524',  /* when accent === 'custom' */
+    skipDuration: 85,         /* Shift+Enter skip seconds */
+    subtitleSize: 18,         /* px */
+    subtitleBg: 0.65,         /* 0..1 */
+    autoSkipOutro: true       /* mirror autoSkip for outro */
+  }, this.read('settings', {})); },
   setSettings(patch) { this.write('settings', Object.assign(this.settings, patch)); },
   get favs() { return this.read('favs', []); },
   isFav(key) { return this.favs.some(f => f.key === key); },
@@ -1037,6 +1216,46 @@ function continueList() {
   return Array.from(seen.values()).filter(it => (it.pos || 0) >= 15 && (!it.dur || (it.pos || 0) < it.dur * 0.96)).slice(0, 14);
 }
 
+/* ---------- theme + title-language application ----------
+   Reads Store.settings and applies:
+   - accent color (writes --acc, --acc2, --accsoft CSS vars on :root)
+   - subtitle cue size + bg opacity (--cue-size, --cue-bg)
+   - body[data-title-lang] so CSS can show/hide card subtitles                 */
+const ACCENT_PRESETS = {
+  amber:   { acc: '#f5a524', acc2: '#ffc25c', soft: 'rgba(245,165,36,.13)' },
+  sage:    { acc: '#4cc38a', acc2: '#7ad8a8', soft: 'rgba(76,195,138,.13)'  },
+  sky:     { acc: '#7fc0ff', acc2: '#a8d6ff', soft: 'rgba(127,192,255,.13)' },
+  coral:   { acc: '#ff8589', acc2: '#ffa8ab', soft: 'rgba(255,133,137,.13)' },
+  lavender:{ acc: '#c98bff', acc2: '#dcb1ff', soft: 'rgba(201,139,255,.13)' }
+};
+function applyTheme() {
+  const s = Store.settings;
+  const root = document.documentElement;
+  let preset = ACCENT_PRESETS[s.accent];
+  if (s.accent === 'custom' || !preset) {
+    /* Derive soft variant from the custom hex */
+    const hex = (s.accentCustom || '#f5a524').trim();
+    const r = parseInt(hex.slice(1, 3), 16) || 245;
+    const g = parseInt(hex.slice(3, 5), 16) || 165;
+    const b = parseInt(hex.slice(5, 7), 16) || 36;
+    root.style.setProperty('--acc', hex);
+    root.style.setProperty('--acc2', `rgb(${Math.min(255, r + 30)},${Math.min(255, g + 30)},${Math.min(255, b + 30)})`);
+    root.style.setProperty('--accsoft', `rgba(${r},${g},${b},.13)`);
+  } else {
+    root.style.setProperty('--acc',  preset.acc);
+    root.style.setProperty('--acc2', preset.acc2);
+    root.style.setProperty('--accsoft', preset.soft);
+  }
+  /* Subtitle cue styling (only affects Direct mode <video>) */
+  root.style.setProperty('--cue-size', (s.subtitleSize || 18) + 'px');
+  root.style.setProperty('--cue-bg', String(s.subtitleBg != null ? s.subtitleBg : 0.65));
+  /* Title language */
+  document.body.dataset.titleLang = s.titleLang || 'both';
+  /* Update theme-color meta to match accent for native UI chrome */
+  const mc = $('meta[name="theme-color"]');
+  if (mc) mc.setAttribute('content', '#0c0a07'); /* keep espresso bg, accent stays inside the app */
+}
+
 /* ---------- toast ---------- */
 let toastT = 0;
 function toast(msg) {
@@ -1047,15 +1266,40 @@ function toast(msg) {
   toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
-/* ---------- image with placeholder fallback ---------- */
-function imgOrPh(src, cls, alt, iconName) {
+/* ---------- image with placeholder fallback ----------
+   opts.eager  → use loading='eager' + decoding='sync' (above-the-fold, or
+                 small lists where a flash of wrong/empty image would be visible)
+   opts.width / opts.height → hint the browser to reserve box space and avoid
+                 layout shift while the bitmap is decoding.
+   Default stays lazy/async for long horizontal scrolls.                              */
+function imgOrPh(src, cls, alt, iconName, opts) {
+  opts = opts || {};
   if (!src) {
-    return h('div', { class: cls + ' imph' }, ic(iconName || 'film'));
+    const phAttrs = { class: (cls || '') + ' imph' };
+    if (opts.width) phAttrs.width = opts.width;
+    if (opts.height) phAttrs.height = opts.height;
+    return h('div', phAttrs, ic(iconName || 'film'));
   }
-  const img = h('img', { class: cls, src: src, alt: alt || '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer' });
+  const attrs = {
+    class: cls,
+    src: src,
+    alt: alt || '',
+    loading: opts.eager ? 'eager' : 'lazy',
+    decoding: opts.eager ? 'sync' : 'async',
+    referrerpolicy: 'no-referrer'
+  };
+  if (opts.width) attrs.width = opts.width;
+  if (opts.height) attrs.height = opts.height;
+  const img = h('img', attrs);
+  /* Paint a transparent placeholder background while decoding so the browser
+     never shows a stale bitmap from a previous render in this slot. */
+  if (!opts.eager) img.style.background = 'var(--bg3)';
+  img.addEventListener('load', () => { img.style.background = ''; }, { once: true });
   img.addEventListener('error', () => {
-    const ph = h('div', { class: cls + ' imph' }, ic(iconName || 'film'));
-    img.replaceWith(ph);
+    const phAttrs = { class: (cls || '') + ' imph' };
+    if (opts.width) phAttrs.width = opts.width;
+    if (opts.height) phAttrs.height = opts.height;
+    img.replaceWith(h('div', phAttrs, ic(iconName || 'film')));
   }, { once: true });
   return img;
 }
@@ -1067,14 +1311,21 @@ function prefetchDetails(key) {
 function animeCard(entry, opts) {
   opts = opts || {};
   const key = entry.key;
-  const card = h('div', { class: 'hcard' + (opts.className ? ' ' + opts.className : ''), dataset: { key: key }, tabindex: '0', role: 'link', 'aria-label': bestTitle(entry) },
+  const sub = titleSub(entry);
+  const card = h('div', { class: 'hcard' + (opts.className ? ' ' + opts.className : ''), dataset: { key: key, hasSub: sub ? '1' : '0' }, tabindex: '0', role: 'link', 'aria-label': bestTitle(entry) },
     h('div', { class: 'hposter' },
-      imgOrPh(entry.poster, '', bestTitle(entry), 'film'),
+      /* eager=true + explicit 2:3 dims: the card itself is fixed-width, so we
+         can let the browser decode synchronously without layout shift, and
+         we never get the "wrong poster flashes in this slot" effect that
+         lazy+async decoding was causing when many cards rendered at once. */
+      imgOrPh(entry.poster, '', bestTitle(entry), 'film', { eager: true, width: 150, height: 225 }),
       opts.epNum != null ? h('span', { class: 'epchip', text: 'EP ' + opts.epNum }) : null,
       opts.progress ? h('div', { class: 'hcard-prog' }, h('i', { style: 'width:' + Math.min(100, Math.round(opts.progress * 100)) + '%' })) : null,
-      opts.relBadge ? h('span', { class: 'rel-badge' + (opts.relBadge === 'You are here' ? ' cur' : ''), text: opts.relBadge }) : null
+      /* No rel-badge — relation types are noise; the highlighted row (cur class) is enough */
+      null
     ),
     h('div', { class: 'hcard-title', text: bestTitle(entry) }),
+    sub ? h('div', { class: 'hcard-sub', text: sub }) : null,
     h('div', { class: 'hcard-meta', text: metaLine(entry) })
   );
   /* ROUTES use the slug (no encoding); API calls (in prefetchDetails) still encode */
@@ -1219,6 +1470,7 @@ const Header = {
         h('span', { class: 'brand-name', html: 'Ani<b>Kuoshi</b>' })
       ),
       h('span', { class: 'hd-sp' }),
+      h('button', { class: 'hd-btn', 'aria-label': 'Settings', onclick: () => Settings.open() }, ic('settings')),
       h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
       h('button', { class: 'hd-btn', 'aria-label': 'Library', onclick: () => go('/library') }, ic('lib'))
     );
@@ -1230,6 +1482,7 @@ const Header = {
       h('button', { class: 'hd-btn', 'aria-label': 'Back', onclick: () => Router.back() }, ic('back')),
       h('div', { class: 'hd-title', text: title }),
       h('span', { class: 'hd-sp' }),
+      h('button', { class: 'hd-btn', 'aria-label': 'Settings', onclick: () => Settings.open() }, ic('settings')),
       h('button', { class: 'hd-ver', onclick: () => Changelog.open(), title: 'AniKuoshi v' + APP_VERSION + ' — changelog', text: 'v' + APP_VERSION }),
       opts.starKey ? h('button', { class: 'hd-btn' + (Store.isFav(opts.starKey) ? ' star-on' : ''), 'aria-label': 'Favorite', id: 'hdStar', onclick: () => {
         const btn = $('#hdStar');
@@ -1253,24 +1506,27 @@ const Changelog = {
     this.body = $('#clBody');
     this.body.replaceChildren(
       h('div', { class: 'cl-section' },
-        h('h3', null, ic('spark', 14), 'AniKuoshi v1.0.1', h('span', { class: 'n', text: 'Bugfix release' })),
-        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'Tightening pass — fixes routing glitches, wrong-franchise bleed-through, and the suggestions overlay clipping into Continue-watching / Favorites cards.' }),
-        h('ul', { class: 'cl-list' },
-          h('li', null, h('span', null, h('b', null, 'Franchise graph now keyed on canonical ID.'), ' /api/seasons and /api/watch-order are called with the ', h('code', null, 'anilist:<id>'), ' key (never the listing slug). Fixes the Hello World bug where Seasons / Watch order were showing ', h('i', null, 'Wo Zai Feitu Shijie Sao Laji'), ' because the API\'s slug', h('code', null, ' hello-world'), ' actually resolves to a different anime.')),
-          h('li', null, h('span', null, h('b', null, 'Search / suggestion cards use the key.'), ' Clicking a result now routes to ', h('code', null, '/anime/anilist:106240'), ' instead of the buggy listing slug. Original behavior restored.')),
-          h('li', null, h('span', null, h('b', null, 'Suggestions overlay no longer overlaps shelves.'), ' Overlay height is computed per-open against the live viewport; it caps below the searchbar with 8px breathing room and recomputes on resize. The keyboard hint is hidden on touch devices / small screens so it stops eating vertical space where it matters most.')),
-          h('li', null, h('span', null, h('b', null, 'History-API routing.'), ' No more ', h('code', null, '#'), ' in URLs. Clean paths like ', h('code', null, '/anime/anilist:106240'), ' and ', h('code', null, '/watch/anilist:9253/2'), '. Direct URL access and refresh work via ', h('code', null, 'vercel.json'), ' SPA rewrite.'))
-        )
-      ),
-      h('div', { class: 'cl-section' },
-        h('h3', null, ic('spark', 14), 'AniKuoshi v1.0', h('span', { class: 'n', text: 'Initial public release' })),
+        h('h3', null, ic('spark', 14), 'AniKuoshi v1.0.0', h('span', { class: 'n', text: 'Initial public release' })),
         h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', text: 'A clean, fast way to search, discover, and stream anime. Built on APIKuoshi, mobile-first, no AI slop.' }),
         h('ul', { class: 'cl-list' },
-          h('li', null, h('span', null, h('b', null, 'Franchise-aware seasons & specials.'), ' Details and Watch pages now correctly resolve to the franchise root (following PREQUEL relations) and split entries into a chronological Seasons list and a Specials bucket (movies, OVAs, ONAs, side stories, alternatives).')),
+          h('li', null, h('span', null, h('b', null, 'Franchise-aware Seasons & Specials.'), ' Details and Watch pages resolve to the franchise root (following PREQUEL relations) and split entries into a chronological Seasons list and a Specials bucket (movies, OVAs, ONAs, side stories, alternatives). Franchise graph always uses the canonical ', h('code', null, 'anilist:<id>'), ' key, never the listing slug — so Hello World actually shows Hello World.')),
           h('li', null, h('span', null, h('b', null, 'Accurate watch order.'), ' Uses ', h('code', null, '/api/watch-order'), ' sorted by release year, with a pulsing "You are here" indicator pinned to the current anime.')),
           h('li', null, h('span', null, h('b', null, 'Removed redundant Related row'), ' on the watch page — Seasons & Specials cover it.')),
-          h('li', null, h('span', null, h('b', null, 'Player: no more janky controls after buffering.'), ' Loading overlay hides cleanly; controls stay hidden until you move the mouse (PC) or tap the video (mobile).')),
-          h('li', null, h('span', null, h('b', null, 'Episode switching never breaks fullscreen.'), ' Next / Prev / Auto-next / episode-card clicks all reload the stream in place — the fullscreen element stays mounted. URL updates silently via ', h('code', null, 'history.replaceState'), '.')),
+          h('li', null, h('span', null, h('b', null, 'Player: controls don\'t pop up after buffering.'), ' Loading overlay hides cleanly; controls stay hidden until you move the mouse (PC) or tap the video (mobile).')),
+          h('li', null, h('span', null, h('b', null, 'Episode switching never breaks fullscreen.'), ' Next / Prev / Auto-next / episode-card clicks reload the stream in place — the fullscreen element stays mounted. URL updates silently via ', h('code', null, 'history.replaceState'), '.')),
+          h('li', null, h('span', null, h('b', null, 'Resume prompt on episode switch.'), ' Switching episodes checks saved progress and asks "Continue from 4:32 or Start fresh?" — no more carrying over the previous episode\'s timestamp. Works in both Direct and Embed modes.')),
+          h('li', null, h('span', null, h('b', null, 'Skip Outro.'), ' Companion to Skip Opening — auto-skips when Auto-skip is on, shows a button when it\'s off. Press ', h('b', null, 'Enter'), ' to trigger whichever skip button is currently visible.')),
+          h('li', null, h('span', null, h('b', null, 'Configurable Shift+Enter skip.'), ' Jumps a configurable number of seconds (default 85, editable in Settings) — like a YouTube "skip ads" shortcut.')),
+          h('li', null, h('span', null, h('b', null, 'Finer keyboard seeking.'), ' J/K/L = ±10s, arrows = ±5s, ', h('code', null, ','), '/', h('code', null, '.'), ' = frame step, 0-9 = jump to N×10%, Shift+arrows = ±60s.')),
+          h('li', null, h('span', null, h('b', null, 'Auto-next countdown.'), ' Netflix-style "UP NEXT: Episode 3" pill appears 15s before the current episode ends, with a countdown ring and a cancel button.')),
+          h('li', null, h('span', null, h('b', null, 'Server health indicator.'), ' Server chips show a green dot for probed-best streams, a red dot for failed probes — informed switching.')),
+          h('li', null, h('span', null, h('b', null, 'Buffered ranges visualization.'), ' Seekbar shows multiple buffered stripes (HLS chunks) instead of a single bar — see exactly what\'s cached ahead.')),
+          h('li', null, h('span', null, h('b', null, 'Title language toggle.'), ' Settings → Titles: English + Romaji subtitle / English only / Romaji only / Native only. Affects every card, suggestion, watch-order row, and header title.')),
+          h('li', null, h('span', null, h('b', null, 'Appearance settings.'), ' Six accent presets (Amber, Sage, Sky, Coral, Lavender) + custom hex picker. Accent applies everywhere — including Direct player controls.')),
+          h('li', null, h('span', null, h('b', null, 'Subtitle styling.'), ' Settings → Subtitles: cue text size (12-36px) and background opacity (0-100%) sliders. Direct player only.')),
+          h('li', null, h('span', null, h('b', null, 'Clean History-API routing.'), ' No more ', h('code', null, '#'), ' in URLs. Routes look like ', h('code', null, '/anime/anilist:106240'), ' and ', h('code', null, '/watch/anilist:9253/2'), '. Direct URL access and refresh work via ', h('code', null, 'vercel.json'), ' SPA rewrite.')),
+          h('li', null, h('span', null, h('b', null, 'Suggestions overlay fixed.'), ' Overlay height is computed per-open against the live viewport; never spills past the bottom. Keyboard hint hidden on touch / small screens. Stacks above Continue-watching and Favorites shelves.')),
+          h('li', null, h('span', null, h('b', null, 'Clear cache button.'), ' Settings → Data: wipes favorites, history, progress, and settings; reloads the page.')),
           h('li', null, h('span', null, h('b', null, 'Smooth animations & AOS.'), ' Subtle entrance animations on cards/sections, smoother control transitions, hover lift on posters, modal pop with spring easing.')),
           h('li', null, h('span', null, h('b', null, 'Mobile-first polish.'), ' Tighter tap targets, swipeable shelves, safe-area-aware fullscreen controls, landscape phone player fix, dynamic seekbar height.')),
           h('li', null, h('span', null, h('b', null, 'Design language: "not so AI."'), ' Espresso-black + amber palette, hand-tuned radii, real shadows, custom keyframe loaders, no purple gradients, no glassmorphism overload.'))
@@ -1280,10 +1536,16 @@ const Changelog = {
         h('h3', null, ic('kbd', 14), 'Keyboard shortcuts', h('span', { class: 'n', text: 'while watching' })),
         h('ul', { class: 'cl-list' },
           h('li', null, h('span', null, h('b', null, 'Space / K'), ' — play or pause')),
-          h('li', null, h('span', null, h('b', null, 'J / L'), ' — seek -10s / +10s,  ',  h('b', null, '\u2190 / \u2192'), ' — seek -5s / +5s')),
+          h('li', null, h('span', null, h('b', null, 'J / L'), ' — seek -10s / +10s'),
+            ',  ', h('b', null, '\u2190 / \u2192'), ' — seek -5s / +5s',
+            ',  ', h('b', null, 'Shift+\u2190 / Shift+\u2192'), ' — seek -60s / +60s'),
+          h('li', null, h('span', null, h('b', null, ', / .'), ' — frame-step backward / forward')),
+          h('li', null, h('span', null, h('b', null, '0-9'), ' — jump to 0%, 10%, 20%, ... 90% of the video')),
+          h('li', null, h('span', null, h('b', null, 'Enter'), ' — trigger the visible Skip Opening / Skip Outro button (like YouTube\'s skip ads)')),
+          h('li', null, h('span', null, h('b', null, 'Shift+Enter'), ' — skip forward by the configured duration (default 85s, change in Settings)')),
           h('li', null, h('span', null, h('b', null, '\u2191 / \u2193'), ' — volume up / down,  ', h('b', null, 'M'), ' — mute')),
           h('li', null, h('span', null, h('b', null, 'F'), ' — toggle fullscreen,  ', h('b', null, 'C'), ' — cycle subtitle tracks')),
-          h('li', null, h('span', null, h('b', null, 'N / P'), ' — next / previous episode (keeps fullscreen)')),
+          h('li', null, h('span', null, h('b', null, 'N / P'), ' — next / previous episode (keeps fullscreen, prompts to resume)')),
           h('li', null, h('span', null, h('b', null, 'Esc'), ' — close popups'))
         )
       )
@@ -1295,9 +1557,166 @@ const Changelog = {
   open() { this.modal.classList.add('open'); document.body.style.overflow = 'hidden'; },
   close() { this.modal.classList.remove('open'); document.body.style.overflow = ''; }
 };
+
+/* ---------- Settings panel ---------- */
+const Settings = {
+  modal: null,
+  body: null,
+  init() {
+    this.modal = $('#settingsModal');
+    this.body = $('#setBody');
+    $('#setClose').addEventListener('click', () => Settings.close());
+    this.modal.addEventListener('click', e => { if (e.target === this.modal) Settings.close(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && this.modal.classList.contains('open')) this.close(); });
+  },
+  open() {
+    this.render();
+    this.modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  },
+  close() {
+    this.modal.classList.remove('open');
+    document.body.style.overflow = '';
+  },
+  /* Re-render a single setting row by key (so the watch view can live-update
+     when e.g. accent color or subtitle size changes).                          */
+  refreshRow(key) {
+    if (!this.modal.classList.contains('open')) return;
+    const row = $('[data-row="' + key + '"]', this.body);
+    if (!row) return;
+    const fresh = this.buildRow(key);
+    if (fresh) row.replaceWith(fresh);
+  },
+  buildRow(key) {
+    const s = Store.settings;
+    if (key === 'titleLang') {
+      return h('div', { class: 'settings-row', dataset: { row: 'titleLang' } },
+        h('div', { class: 'lbl' }, 'Title language', h('small', null, 'How anime titles appear on cards and headers')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'seg' },
+            ['both','english','romaji','native'].map(v => h('button', {
+              class: s.titleLang === v ? 'on' : '',
+              onclick: () => {
+                Store.setSettings({ titleLang: v });
+                applyTheme();
+                this.refreshRow('titleLang');
+                /* Re-render the current view so all visible cards update immediately */
+                Router.render();
+              }
+            }, v === 'both' ? 'EN+Romaji' : v === 'english' ? 'English' : v === 'romaji' ? 'Romaji' : 'Native'))
+          )));
+    }
+    if (key === 'accent') {
+      const swatches = [
+        { id: 'amber',   color: '#f5a524', label: 'Amber' },
+        { id: 'sage',    color: '#4cc38a', label: 'Sage' },
+        { id: 'sky',     color: '#7fc0ff', label: 'Sky' },
+        { id: 'coral',   color: '#ff8589', label: 'Coral' },
+        { id: 'lavender',color: '#c98bff', label: 'Lavender' }
+      ];
+      return h('div', { class: 'settings-row', dataset: { row: 'accent' } },
+        h('div', { class: 'lbl' }, 'Accent color', h('small', null, 'Applies everywhere — including Direct player controls')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'swatches' },
+            ...swatches.map(sw => h('button', {
+              class: 'swatch' + (s.accent === sw.id ? ' on' : ''),
+              style: 'background:' + sw.color,
+              title: sw.label,
+              'aria-label': sw.label,
+              onclick: () => { Store.setSettings({ accent: sw.id }); applyTheme(); this.refreshRow('accent'); this.refreshRow('accentCustom'); }
+            })),
+            h('label', {
+              class: 'swatch custom' + (s.accent === 'custom' ? ' on' : ''),
+              title: 'Custom color',
+              'aria-label': 'Custom color'
+            },
+              h('input', {
+                type: 'color',
+                value: s.accentCustom || '#f5a524',
+                onchange: (e) => { Store.setSettings({ accent: 'custom', accentCustom: e.target.value }); applyTheme(); this.refreshRow('accent'); }
+              }))
+          )));
+    }
+    if (key === 'skipDuration') {
+      return h('div', { class: 'settings-row', dataset: { row: 'skipDuration' } },
+        h('div', { class: 'lbl' }, 'Shift+Enter skip', h('small', null, 'Seconds jumped by Shift+Enter in the player')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'num-input' },
+            h('button', { onclick: () => { const v = Math.max(5, (s.skipDuration || 85) - 5); Store.setSettings({ skipDuration: v }); this.refreshRow('skipDuration'); } }, '\u2212'),
+            h('input', { type: 'number', min: '5', max: '300', step: '5', value: String(s.skipDuration || 85),
+              onchange: (e) => { const v = Math.max(5, Math.min(300, parseInt(e.target.value, 10) || 85)); Store.setSettings({ skipDuration: v }); applyTheme(); this.refreshRow('skipDuration'); } }),
+            h('button', { onclick: () => { const v = Math.min(300, (s.skipDuration || 85) + 5); Store.setSettings({ skipDuration: v }); applyTheme(); this.refreshRow('skipDuration'); } }, '+')),
+          h('span', { class: 'val', style: 'min-width:auto;margin-left:6px', text: 's' })));
+    }
+    if (key === 'subtitleSize') {
+      return h('div', { class: 'settings-row', dataset: { row: 'subtitleSize' } },
+        h('div', { class: 'lbl' }, 'Subtitle size', h('small', null, 'Direct player only — cue text height in pixels')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'range-wrap' },
+            h('input', { type: 'range', min: '12', max: '36', step: '1',
+              value: String(s.subtitleSize || 18),
+              oninput: (e) => { Store.setSettings({ subtitleSize: parseInt(e.target.value, 10) }); applyTheme(); $('.val', e.target.parentElement).textContent = e.target.value + 'px'; } }),
+            h('span', { class: 'val', text: (s.subtitleSize || 18) + 'px' }))));
+    }
+    if (key === 'subtitleBg') {
+      return h('div', { class: 'settings-row', dataset: { row: 'subtitleBg' } },
+        h('div', { class: 'lbl' }, 'Subtitle background', h('small', null, 'Opacity of the black cue background, 0\u20131')),
+        h('div', { class: 'ctl' },
+          h('div', { class: 'range-wrap' },
+            h('input', { type: 'range', min: '0', max: '1', step: '0.05',
+              value: String(s.subtitleBg != null ? s.subtitleBg : 0.65),
+              oninput: (e) => { Store.setSettings({ subtitleBg: parseFloat(e.target.value) }); applyTheme(); $('.val', e.target.parentElement).textContent = Math.round(parseFloat(e.target.value) * 100) + '%'; } }),
+            h('span', { class: 'val', text: Math.round((s.subtitleBg != null ? s.subtitleBg : 0.65) * 100) + '%' }))));
+    }
+    if (key === 'clearCache') {
+      return h('div', { class: 'settings-row', dataset: { row: 'clearCache' } },
+        h('div', { class: 'lbl' }, 'Clear cache & history', h('small', null, 'Wipes favorites, history, progress, settings, and in-memory cache; reloads the page')),
+        h('div', { class: 'ctl' },
+          h('button', { class: 'btn btn--danger', style: 'min-height:38px;padding:0 14px;font-size:13px',
+            onclick: () => {
+              if (!confirm('Clear ALL local data — favorites, history, progress, settings?')) return;
+              try {
+                ['favs','hist','prog','settings','toggles','kbdhint','cc'].forEach(k => localStorage.removeItem('anikuoshi:' + k));
+              } catch (e) { }
+              MemCache.clear();
+              WatchCore.clearAll();
+              Franchise._rootCache.clear();
+              location.href = '/';
+              location.reload();
+            }
+          }, ic('trash', 14), 'Clear all')));
+    }
+    return null;
+  },
+  render() {
+    this.body.replaceChildren(
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('palette', 14), 'Appearance'),
+        this.buildRow('accent')
+      ),
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('type', 14), 'Titles'),
+        this.buildRow('titleLang')
+      ),
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('gauge-fast', 14), 'Playback'),
+        this.buildRow('skipDuration')
+      ),
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('cc-on', 14), 'Subtitles'),
+        this.buildRow('subtitleSize'),
+        this.buildRow('subtitleBg')
+      ),
+      h('div', { class: 'settings-section' },
+        h('h3', null, ic('trash', 14), 'Data'),
+        this.buildRow('clearCache')
+      )
+    );
+  }
+};
 </script>
 <script>
-/* ================= AniKuoshi v1.0.1 — views: home / search / library ================= */
+/* ================= AniKuoshi v1.0.0 — views: home / search / library ================= */
 'use strict';
 
 /* ---------- live suggestions ---------- */
@@ -1348,11 +1767,13 @@ const Suggest = {
       }
       dropdown.replaceChildren(
         ...items.map((it, i) => {
+          const sub = titleSub(it);
           const row = h('div', { class: 'sugg-item', dataset: { idx: i }, role: 'option' },
             it.poster ? imgOrPh(it.poster, 'sugg-thumb', '', 'film')
                       : h('div', { class: 'sugg-thumb-fallback' }, ic('film')),
             h('div', { class: 'sugg-info' },
               h('div', { class: 'sugg-title', text: bestTitle(it) }),
+              sub ? h('div', { class: 'sugg-meta sugg-sub', text: sub }) : null,
               h('div', { class: 'sugg-meta',
                 text: [metaLine(it), it.dub > 0 ? 'Dub' : 'Sub only'].filter(Boolean).join(' \u00b7 ') })
             ),
@@ -1498,13 +1919,9 @@ const Views = {
     }
     shelves.append(
       h('div', { class: 'foot' },
-        h('div', null, h('a', { onclick: () => Changelog.open(), style: 'cursor:pointer', text: 'AniKuoshi v' + APP_VERSION }), ' \u00b7 built by Ryzishin'),
-        h('div', { class: 'foot-ver' },
-          h('span', { text: 'APIKuoshi-powered' }),
-          h('span', { class: 'dot' }),
-          h('span', { text: 'mobile-first' }),
-          h('span', { class: 'dot' }),
-          h('span', { text: 'no AI slop' })
+        h('div', null,
+          h('a', { onclick: () => Changelog.open(), style: 'cursor:pointer', text: 'AniKuoshi v' + APP_VERSION }),
+          ' \u00b7 RYZISHIN'
         )
       )
     );
@@ -1646,7 +2063,7 @@ Views.library = async function (view, my, tab) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.1 — views: details ================= */
+/* ================= AniKuoshi v1.0.0 — views: details ================= */
 'use strict';
 
 const GROUP_LABEL = {
@@ -1669,6 +2086,17 @@ function sectionBlock(title, iconName) {
       else el.append(h('div', { class: 'hscroll' }, real));
       el.hidden = false;
       return true;
+    },
+    /* Clear any previously-appended cards / hscroll, then fill again.
+       Used when franchise data arrives and replaces local-categorized data. */
+    refill(...nodes) {
+      Array.from(el.children).forEach(c => { if (c.tagName !== 'H2') c.remove(); });
+      el.hidden = true;
+      return this.fill(...nodes);
+    },
+    clear() {
+      Array.from(el.children).forEach(c => { if (c.tagName !== 'H2') c.remove(); });
+      el.hidden = true;
     }
   };
 }
@@ -1759,7 +2187,7 @@ Views.details = async function (view, my, key) {
 
   const head = h('div', { class: 'dbody', 'data-aos': 'fade-up' },
     h('div', { class: 'dhead' },
-      h('div', { class: 'dposter' }, imgOrPh(a.poster, '', bestTitle(a), 'film')),
+      h('div', { class: 'dposter' }, imgOrPh(a.poster, '', bestTitle(a), 'film', { eager: true, width: 112, height: 168 })),
       h('div', { class: 'dinfo' },
         h('div', { class: 'dtype-row' },
           a.type ? h('span', { class: 'badge badge--acc', text: a.type }) : null,
@@ -1827,10 +2255,19 @@ Views.details = async function (view, my, key) {
   const secRoot = h('div', { class: 'wrap' }, secChars.el, secSeasons.el, secSpecials.el, secWo.el, secRecs.el);
   view.append(secRoot);
 
+  /* alive() gates every async DOM mutation in this view, so a stale response
+     that lands after the user has navigated away is silently dropped instead
+     of corrupting the new page (which was the root cause of the
+     "swapped posters to the right" glitch). */
+  const alive = () => my === Router.seq;
+
   /* ---- Seasons & Specials: use franchise graph (resolves root first) ---- */
   const relEntries = (data.relations && data.relations.entries) || [];
 
-  /* Local fallback from direct relations, used when franchise walk fails */
+  /* Local fallback from direct relations, used when franchise walk fails.
+     Also used as an IMMEDIATE first paint — the franchise walk can do up to 8
+     sequential API calls before resolving, so we show local data first and
+     upgrade to franchise data when (if) it arrives. */
   function localCategorize() {
     const seasons = [];
     const specials = [];
@@ -1883,123 +2320,152 @@ Views.details = async function (view, my, key) {
     return { seasons, specials };
   }
 
-  /* Try the franchise graph first (resolves root, then walks full graph) */
-  let franchiseData = null;
-  try {
-    franchiseData = await Franchise.fullFranchise(a);
-  } catch (e) { franchiseData = null; }
-
-  let seasons = [];
-  let specials = [];
-  let watchOrder = [];
-
-  if (franchiseData && franchiseData.watchOrder && franchiseData.watchOrder.length) {
-    watchOrder = franchiseData.watchOrder;
-    /* Categorize the watch-order rows */
-    for (const r of watchOrder) {
-      if (!r || !r.key) continue;
-      const rel = String(r.relation || '').toLowerCase();
-      const cat = categorizeFranchiseEntry(r, rel);
-      if (cat === 'season') seasons.push({ entry: r, relation: rel });
-      else specials.push({ entry: r, relation: rel });
-    }
-    /* Mark self */
-    const selfKey = a.key;
-    seasons.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
-    specials.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
-  } else {
-    /* Fall back to local categorization */
-    const local = localCategorize();
-    seasons = local.seasons;
-    specials = local.specials;
-  }
-
-  /* Remove self duplicates (an entry can appear in watch-order both as 'self' and a bucket) */
-  const seenKeys = new Set();
-  const dedup = list => list.filter(({ entry }) => {
-    if (!entry || !entry.key) return false;
-    if (seenKeys.has(entry.key)) return false;
-    seenKeys.add(entry.key);
-    return true;
-  });
-  seasons = dedup(seasons);
-  specials = dedup(specials);
-
-  /* Sort: by releaseOrder (if from watch-order) else by year */
+  /* ---- Shared dedup + sort helpers (reused for both local + franchise data) ---- */
+  const dedup = list => {
+    const seen = new Set();
+    return list.filter(({ entry }) => {
+      if (!entry || !entry.key) return false;
+      if (seen.has(entry.key)) return false;
+      seen.add(entry.key);
+      return true;
+    });
+  };
   const sortByRelease = list => list.sort((x, y) => {
     const rx = Number(x.entry.releaseOrder || x.entry.order || 0);
     const ry = Number(y.entry.releaseOrder || y.entry.order || 0);
     if (rx && ry && rx !== ry) return rx - ry;
     return (x.entry.year || 9999) - (y.entry.year || 9999);
   });
-  sortByRelease(seasons);
-  sortByRelease(specials);
 
-  if (seasons.length) {
-    const cards = seasons.map(({ entry, relation }) =>
+  /* ---- Painters for seasons / specials / watch-order. Safe to call again:
+       refill() clears previous cards first so we never stack duplicates. ---- */
+  const paintSeasons = list => {
+    if (!alive() || !list.length) return;
+    secSeasons.refill(list.map(({ entry, relation }) =>
       animeCard(entry, { className: 'relcard', relBadge: relation === 'self' ? 'You are here' : (GROUP_LABEL[relation] || relation) })
-    );
-    secSeasons.fill(cards);
-  }
-  if (specials.length) {
-    const cards = specials.map(({ entry, relation }) =>
+    ));
+  };
+  const paintSpecials = list => {
+    if (!alive() || !list.length) return;
+    secSpecials.refill(list.map(({ entry, relation }) =>
       animeCard(entry, { className: 'relcard', relBadge: relation === 'self' ? 'You are here' : (GROUP_LABEL[relation] || relation) })
-    );
-    secSpecials.fill(cards);
-  }
-
-  /* ---- Watch order block (full franchise timeline with accurate "You are here") ---- */
-  if (watchOrder.length) {
-    const rows = watchOrder;
+    ));
+  };
+  const paintWatchOrder = rows => {
+    if (!alive() || !rows || !rows.length) return;
     secWo.fill(h('div', { class: 'wolist' }, rows.map((r, i) => {
       const isCur = r.key === a.key;
-      const rel = String(r.relation || '').toLowerCase();
       const row = h('div', { class: 'worow' + (isCur ? ' cur' : ''), tabindex: '0', role: 'link' },
         h('span', { class: 'wo-n', text: String(r.releaseOrder || r.order || i + 1) }),
-        imgOrPh(r.poster, 'wo-img', bestTitle(r), 'film'),
+        imgOrPh(r.poster, 'wo-img', bestTitle(r), 'film', { eager: true, width: 44, height: 60 }),
         h('div', { class: 'wo-t' },
           h('div', { class: 'wo-title', text: bestTitle(r) }),
           h('div', { class: 'wo-meta' },
             r.type ? h('span', { class: 'badge', text: r.type }) : null,
             r.year ? h('span', { text: r.year }) : null,
-            r.episodes ? h('span', { text: r.episodes === 1 ? '1 ep' : r.episodes + ' eps' }) : null,
-            rel ? h('span', { text: (GROUP_LABEL[rel] || rel).toLowerCase() }) : null)),
+            r.episodes ? h('span', { text: r.episodes === 1 ? '1 ep' : r.episodes + ' eps' }) : null)),
         isCur ? h('span', { class: 'wo-here', text: 'You are here' }) : null);
       const openIt = () => go(routeFor(r));
       row.addEventListener('click', openIt);
       row.addEventListener('keydown', e => { if (e.key === 'Enter') openIt(); });
       return row;
     })));
-    /* Auto-scroll the "You are here" row into view */
-    requestAnimationFrame(() => {
-      const cur = $('.worow.cur', secWo.el);
-      if (cur) cur.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    });
+    /* No auto-scroll — let the user navigate the watch order themselves */
+  };
+
+  /* =============== STAGE 1 — IMMEDIATE LOCAL PAINT ===============
+     localCategorize() only uses data already in `data.relations` from the
+     main /api/anime call, so it's synchronous. We paint seasons/specials
+     right now so the user sees content while the franchise graph resolves.
+     Without this, the page went: hero → 1–3s of nothing → BAM everything. */
+  let seasons = [];
+  let specials = [];
+  let watchOrder = [];
+  {
+    const local = localCategorize();
+    seasons = sortByRelease(dedup(local.seasons));
+    specials = sortByRelease(dedup(local.specials));
+    paintSeasons(seasons);
+    paintSpecials(specials);
   }
 
-  /* ---- parallel enrichment ---- */
-  const alive = () => my === Router.seq;
+  /* =============== STAGE 2 — FIRE ALL ENRICHMENT IN PARALLEL ===============
+     These four requests are completely independent of the franchise graph,
+     so they should be in flight AT THE SAME TIME as Franchise.fullFranchise,
+     not after it. Previously they were started AFTER the franchise await,
+     which added their full latency on top of the franchise latency. */
   const enrich = [
-    API.get('/api/meta/mal?key=' + enc(a.key), 30 * 60000).then(j => { malBox.mal = j.mal || null; fillMalFacts(); }).catch(() => { }),
-    API.get('/api/meta/characters?key=' + enc(a.key) + '&limit=24', 30 * 60000).then(j => {
-      const list = (j.characters || []).filter(c => c && c.character);
-      if (!list.length || !alive()) return;
-      secChars.fill(list.map(c => h('div', { class: 'chacard' },
-        h('div', { class: 'cha-img' }, imgOrPh(c.character.image, '', c.character.name, 'users')),
-        h('div', { class: 'cha-name', text: c.character.name || '' }),
-        c.voiceActor && c.voiceActor.name ? h('div', { class: 'cha-va', text: c.voiceActor.name }) : null)));
-    }).catch(() => { }),
-    API.get('/api/meta/recommendations?key=' + enc(a.key) + '&limit=12', 30 * 60000).then(j => {
-      const recs = (j.recommendations || []).filter(r => r && r.key);
-      if (!recs.length || !alive()) return;
-      secRecs.fill(recs.map(r => animeCard(r)));
-    }).catch(() => { })
+    API.get('/api/meta/mal?key=' + enc(a.key), 30 * 60000)
+      .then(j => { if (!alive()) return; malBox.mal = j.mal || null; fillMalFacts(); })
+      .catch(() => { }),
+    API.get('/api/meta/characters?key=' + enc(a.key) + '&limit=24', 30 * 60000)
+      .then(j => {
+        const list = (j.characters || []).filter(c => c && c.character);
+        if (!list.length || !alive()) return;
+        secChars.fill(list.map(c => h('div', { class: 'chacard' },
+          h('div', { class: 'cha-img' }, imgOrPh(c.character.image, '', c.character.name, 'users', { eager: true, width: 80, height: 110 })),
+          h('div', { class: 'cha-name', text: c.character.name || '' }),
+          c.voiceActor && c.voiceActor.name ? h('div', { class: 'cha-va', text: c.voiceActor.name }) : null)));
+      }).catch(() => { }),
+    API.get('/api/meta/recommendations?key=' + enc(a.key) + '&limit=12', 30 * 60000)
+      .then(j => {
+        const recs = (j.recommendations || []).filter(r => r && r.key);
+        if (!recs.length || !alive()) return;
+        secRecs.fill(recs.map(r => animeCard(r)));
+      }).catch(() => { })
   ];
+
+  /* =============== STAGE 3 — UPGRADE TO FRANCHISE DATA WHEN IT LANDS ===============
+     Franchise.fullFranchise resolves the franchise root (potentially up to 8
+     sequential prequel-walk API calls) and then fetches both /api/seasons/:key
+     and /api/watch-order/:key in parallel. When it lands, we replace the
+     locally-categorized seasons/specials with the more accurate franchise
+     timeline — but only if the set of keys actually differs, to avoid a
+     pointless visual flash when the data is identical. */
+  let franchiseData = null;
+  try {
+    franchiseData = await Franchise.fullFranchise(a);
+  } catch (e) { franchiseData = null; }
+  if (!alive()) return;
+
+  if (franchiseData && franchiseData.watchOrder && franchiseData.watchOrder.length) {
+    watchOrder = franchiseData.watchOrder;
+    const frSeasons = [];
+    const frSpecials = [];
+    for (const r of watchOrder) {
+      if (!r || !r.key) continue;
+      const rel = String(r.relation || '').toLowerCase();
+      const cat = categorizeFranchiseEntry(r, rel);
+      if (cat === 'season') frSeasons.push({ entry: r, relation: rel });
+      else frSpecials.push({ entry: r, relation: rel });
+    }
+    const selfKey = a.key;
+    frSeasons.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
+    frSpecials.forEach(s => { if (s.entry.key === selfKey) s.relation = 'self'; });
+
+    const newSeasons = sortByRelease(dedup(frSeasons));
+    const newSpecials = sortByRelease(dedup(frSpecials));
+
+    /* Only repaint if the franchise data actually differs from what we
+       already painted in STAGE 1. Comparing joined keys is enough to catch
+       "same data, no need to flash the user" cases. */
+    const sameSeasons = newSeasons.length === seasons.length
+      && newSeasons.every((s, i) => s.entry.key === seasons[i].entry.key);
+    const sameSpecials = newSpecials.length === specials.length
+      && newSpecials.every((s, i) => s.entry.key === specials[i].entry.key);
+
+    if (!sameSeasons) { seasons = newSeasons; paintSeasons(seasons); }
+    if (!sameSpecials) { specials = newSpecials; paintSpecials(specials); }
+
+    paintWatchOrder(watchOrder);
+  }
+
+  /* AOS animations need a refresh after the section visibility changes. */
   if (window.AOS) AOS.refresh();
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.1 — watch view + player ================= */
+/* ================= AniKuoshi v1.0.0 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -2097,7 +2563,14 @@ function createPlayer(box, ui) {
     dom.ripR = h('div', { class: 'ripple' }, ic('next'), h('span', { text: '10s' }));
     dom.zoneL = h('div', { class: 'tapzone tapzone--l' }, dom.ripL);
     dom.zoneR = h('div', { class: 'tapzone tapzone--r' }, dom.ripR);
-    dom.skip = h('button', { class: 'skipbtn' }, 'Skip Opening');
+    /* Skip Opening button (warm/amber — existing) */
+    dom.skip = h('button', { class: 'skipbtn' }, ic('skip', 14), 'Skip Opening');
+    /* Skip Outro button (cool/blue — new) */
+    dom.skipOutro = h('button', { class: 'skipbtn skip-outro' }, ic('skip', 14), 'Skip Outro');
+    /* Resume modal (shown when switching to an episode that has saved progress) */
+    dom.resume = h('div', { class: 'resume-modal' });
+    /* Auto-next countdown pill */
+    dom.nextPill = h('div', { class: 'next-pill' });
     dom.topTitle = h('div', { class: 'pt-title', text: '' });
     dom.topControls = h('div', { class: 'ptop-right', style: 'display:flex;align-items:center;gap:2px;margin-left:auto' },
       h('button', { class: 'pcbtn', 'aria-label': 'Subtitles' }, ic('cc')),
@@ -2111,8 +2584,13 @@ function createPlayer(box, ui) {
       dom.topTitle,
       dom.topControls
     );
+    /* Seekbar now contains a .ranges layer for multi-stripe buffered viz */
     dom.bar = h('div', { class: 'pcbar' },
-      h('div', { class: 'track' }, h('div', { class: 'buf' }), h('div', { class: 'fill' }), h('div', { class: 'knob', style: 'left:0' })));
+      h('div', { class: 'track' },
+        h('div', { class: 'ranges' }),
+        h('div', { class: 'buf' }),
+        h('div', { class: 'fill' }),
+        h('div', { class: 'knob', style: 'left:0' })));
     dom.btnPlay = h('button', { class: 'pcbtn', 'aria-label': 'Play or pause' }, ic('play'));
     dom.btnPrev = h('button', { class: 'pcbtn', 'aria-label': 'Previous episode', disabled: true }, ic('prev'));
     dom.btnNext = h('button', { class: 'pcbtn', 'aria-label': 'Next episode', disabled: true }, ic('next'));
@@ -2124,7 +2602,7 @@ function createPlayer(box, ui) {
     dom.end = h('div', { class: 'endcard' });
     dom.err = h('div', { class: 'perr' });
     dom.speedPill = h('div', { class: 'speed-pill', text: '2\u00d7 Speed' });
-    box.append(P.video, P.iframe, dom.load, dom.center, dom.zoneL, dom.zoneR, dom.skip, dom.top, dom.ctl, dom.ccPop, dom.speedPop, dom.end, dom.err, dom.speedPill, h('div', { class: 'vign' }));
+    box.append(P.video, P.iframe, dom.load, dom.center, dom.zoneL, dom.zoneR, dom.skip, dom.skipOutro, dom.nextPill, dom.resume, dom.top, dom.ctl, dom.ccPop, dom.speedPop, dom.end, dom.err, dom.speedPill, h('div', { class: 'vign' }));
     P.el = dom;
     wire();
     const topBtns = dom.topControls.querySelectorAll('.pcbtn');
@@ -2171,6 +2649,30 @@ const hideLoad = () => {
   syncCenter();
 };
 
+/* Resume prompt — shown when switching to an episode that has saved progress.
+   Blocks playback until the user picks Continue or Start fresh.
+   Works in BOTH Direct and Embed modes (the modal overlays the whole player). */
+function showResumePrompt(savedPos, savedProg, onContinue, onFresh) {
+  if (!dom.resume) { onContinue && onContinue(); return; }
+  /* Hide the loading overlay while the modal is up */
+  hideLoad();
+  /* Pause any current playback (Direct mode) */
+  if (P.video) { try { P.video.pause(); } catch (e) { } }
+  dom.resume.replaceChildren(
+    h('h3', { text: 'Continue watching?' }),
+    h('p', { text: 'You were at ' + fmtTime(savedPos) + (savedProg && savedProg.dur ? ' of ' + fmtTime(savedProg.dur) : '') + ' in this episode.' }),
+    h('div', { class: 'resume-actions' },
+      h('button', { class: 'btn btn--acc btn--lg', style: 'min-height:42px;padding:0 18px;font-size:13.5px',
+        onclick: () => { dom.resume.classList.remove('show'); onContinue && onContinue(); }
+      }, ic('play', 16), 'Continue from ' + fmtTime(savedPos)),
+      h('button', { class: 'btn btn--line', style: 'min-height:42px;padding:0 16px;font-size:13.5px',
+        onclick: () => { dom.resume.classList.remove('show'); onFresh && onFresh(); }
+      }, ic('refresh', 16), 'Start fresh')
+    )
+  );
+  dom.resume.classList.add('show');
+}
+
 /* Single source of truth for the center play/pause button. */
 function syncCenter() {
   if (P.destroyed || P.state.mode !== 'direct') { dom.center.style.display = 'none'; return; }
@@ -2203,12 +2705,38 @@ function syncCenter() {
       $('.fill', dom.bar).style.width = pct + '%';
       $('.knob', dom.bar).style.left = pct + '%';
     }
+    /* Buffered ranges multi-stripe viz (HLS chunks) */
+    const rangesEl = $('.ranges', dom.bar);
+    if (rangesEl && v.buffered && v.buffered.length && v.duration) {
+      const ranges = [];
+      for (let i = 0; i < v.buffered.length; i++) {
+        ranges.push({ start: v.buffered.start(i), end: v.buffered.end(i) });
+      }
+      /* Rebuild stripes only if ranges changed (cheap diff) */
+      const sig = ranges.map(r => r.start + '-' + r.end).join('|');
+      if (rangesEl.dataset.sig !== sig) {
+        rangesEl.dataset.sig = sig;
+        rangesEl.replaceChildren(...ranges.map(r => {
+          const left = (r.start / v.duration) * 100;
+          const width = Math.max(0.5, ((r.end - r.start) / v.duration) * 100);
+          return h('div', { class: 'range-stripe', style: 'left:' + left + '%;width:' + width + '%' });
+        }));
+      }
+    } else if (rangesEl && rangesEl.children.length) {
+      rangesEl.replaceChildren();
+      rangesEl.dataset.sig = '';
+    }
     if (v.buffered && v.buffered.length) {
       try { $('.buf', dom.bar).style.width = (v.buffered.end(v.buffered.length - 1) / (v.duration || 1)) * 100 + '%'; } catch (e) { }
     }
+
     const st = P.state.entry && P.state.entry.stream;
     const intro = st && st.skipIntro && st.skipIntro.intro;
-    const autoSkip = Store.getToggles().autoSkip;
+    const outro = st && st.skipIntro && st.skipIntro.outro;
+    const toggles = Store.getToggles();
+    const autoSkip = toggles.autoSkip;
+    const autoSkipOutro = Store.settings.autoSkipOutro;
+    /* ---- Skip Opening ---- */
     if (!autoSkip && intro && intro.end > intro.start && v.currentTime >= intro.start && v.currentTime <= intro.end - 3) {
       dom.skip.classList.add('show');
     } else if (!autoSkip) {
@@ -2219,10 +2747,93 @@ function syncCenter() {
         v.currentTime = intro.end;
       }
     }
+    /* ---- Skip Outro ---- */
+    if (!autoSkipOutro && outro && outro.end > outro.start && v.currentTime >= outro.start && v.currentTime <= outro.end - 1) {
+      dom.skipOutro.classList.add('show');
+    } else if (!autoSkipOutro) {
+      dom.skipOutro.classList.remove('show');
+    } else {
+      dom.skipOutro.classList.remove('show');
+      if (outro && outro.end > outro.start && v.currentTime >= outro.start && v.currentTime < outro.end - 0.3) {
+        /* Auto-skip outro → jump to next episode if available, else to end of video */
+        if (ui.hasNext && ui.hasNext()) {
+          ui.onNext && ui.onNext();
+        } else {
+          v.currentTime = v.duration || v.currentTime;
+        }
+      }
+    }
+
+    /* ---- Auto-next countdown pill (15s before end) ---- */
+    updateNextPill();
+
     if (v.duration && Date.now() - P.lastSave > 4000) {
       P.lastSave = Date.now();
       ui.onProgress(v.currentTime, v.duration, false);
     }
+  }
+  /* Netflix-style "UP NEXT" pill — shows 15s before the video ends, counts
+     down with a ring, and auto-advances when the timer reaches 0.          */
+  function updateNextPill() {
+    const v = P.video;
+    if (!v || !v.duration || v.paused || P.state.mode !== 'direct' || P.destroyed) {
+      hideNextPill();
+      return;
+    }
+    const toggles = Store.getToggles();
+    /* Only show if auto-next is OFF (when auto-next is ON, the endcard handles it) */
+    if (toggles.autoNext) { hideNextPill(); return; }
+    const remaining = v.duration - v.currentTime;
+    const SHOW_AT = 15;
+    if (remaining > SHOW_AT || remaining <= 0.2) { hideNextPill(); return; }
+    if (!ui.hasNext || !ui.hasNext()) { hideNextPill(); return; }
+    /* Show pill */
+    const nextEp = ui.peekNext ? ui.peekNext() : null;
+    const epLabel = nextEp ? ('Episode ' + nextEp.number) : 'Next episode';
+    const epTitle = nextEp && nextEp.title ? ' · ' + nextEp.title : '';
+    const secs = Math.max(0, Math.ceil(remaining));
+    if (!dom.nextPill.classList.contains('show')) {
+      /* First render — build the structure */
+      buildNextPill(epLabel, epTitle);
+      dom.nextPill.classList.add('show');
+      P._nextCountdown = SHOW_AT;
+    }
+    /* Update countdown ring */
+    const ring = $('.np-prog', dom.nextPill);
+    if (ring) {
+      const r = 8;
+      const circumference = 2 * Math.PI * r;
+      const progress = remaining / SHOW_AT; /* 1..0 */
+      ring.style.strokeDasharray = circumference;
+      ring.style.strokeDashoffset = String(circumference * (1 - progress));
+    }
+    const txt = $('.np-text b', dom.nextPill);
+    if (txt) txt.textContent = 'Up next: ' + epLabel;
+    const sub = $('.np-text span', dom.nextPill);
+    if (sub) sub.textContent = 'In ' + secs + 's';
+    /* If countdown reaches 0, advance */
+    if (remaining <= 0.6 && !P._nextTriggered) {
+      P._nextTriggered = true;
+      ui.onNext && ui.onNext();
+    }
+  }
+  function buildNextPill(epLabel, epTitle) {
+    const r = 8;
+    const circumference = 2 * Math.PI * r;
+    dom.nextPill.replaceChildren(
+      h('div', { class: 'np-ring' },
+        h('svg', { viewBox: '0 0 20 20' },
+          h('circle', { cx: '10', cy: '10', r: String(r) }),
+          h('circle', { class: 'np-prog', cx: '10', cy: '10', r: String(r), style: 'stroke-dasharray:' + circumference + ';stroke-dashoffset:' + circumference }))),
+      h('div', { class: 'np-text' },
+        h('b', { text: 'Up next: ' + epLabel }),
+        h('span', { text: 'In 15s' })),
+      h('span', { class: 'np-cancel', text: 'Cancel', onclick: (e) => { e.stopPropagation(); hideNextPill(); P._nextCancelled = true; toast('Auto-next cancelled'); } })
+    );
+  }
+  function hideNextPill() {
+    if (dom.nextPill) dom.nextPill.classList.remove('show');
+    P._nextTriggered = false;
   }
   /* showControls(show): shows or hides the bottom/top bars.
      When hiding, also hides the center button. When showing, schedules auto-hide
@@ -2342,11 +2953,14 @@ function syncCenter() {
     }
     if (P.iframe) { P.iframe.src = 'about:blank'; P.iframe.style.display = 'none'; }
     P.tracks = [];
-    [dom.ccPop, dom.speedPop, dom.end, dom.err].forEach(p => { p.classList.remove('open', 'show'); });
+    [dom.ccPop, dom.speedPop, dom.end, dom.err, dom.resume].forEach(p => { p.classList.remove('open', 'show'); });
     dom.load.style.display = 'none';
     dom.ctl.classList.add('hide');
     dom.top.classList.add('hide');
     dom.skip.classList.remove('show');
+    if (dom.skipOutro) dom.skipOutro.classList.remove('show');
+    if (dom.nextPill) hideNextPill();
+    P._nextCancelled = false;
     dom.center.style.display = 'none';
     dom.zoneL.classList.remove('show');
     dom.zoneR.classList.remove('show');
@@ -2377,9 +2991,11 @@ function syncCenter() {
     dom.ctl.classList.add('hide');
     dom.top.classList.add('hide');
     dom.skip.classList.remove('show');
+    if (dom.skipOutro) dom.skipOutro.classList.remove('show');
+    if (dom.nextPill) hideNextPill();
     dom.center.style.display = 'none';
     dom.zoneL.classList.remove('show'); dom.zoneR.classList.remove('show');
-    [dom.ccPop, dom.speedPop, dom.end, dom.err].forEach(p => p.classList.remove('open', 'show'));
+    [dom.ccPop, dom.speedPop, dom.end, dom.err, dom.resume].forEach(p => p.classList.remove('open', 'show'));
     ui.onModeUI('embed');
   }
   async function loadDirect(st, opts) {
@@ -2603,6 +3219,22 @@ function syncCenter() {
       if (intro) P.video.currentTime = intro.end;
       dom.skip.classList.remove('show');
     });
+    /* Skip Outro — jumps to outro.end (or next episode if outro.end is end of video) */
+    dom.skipOutro.addEventListener('click', () => {
+      const st = P.state.entry && P.state.entry.stream;
+      const outro = st && st.skipIntro && st.skipIntro.outro;
+      if (outro && outro.end) {
+        /* If outro ends at or near the video duration, jump to next episode */
+        if (P.video.duration && outro.end >= P.video.duration - 1 && ui.hasNext && ui.hasNext()) {
+          ui.onNext && ui.onNext();
+        } else {
+          P.video.currentTime = outro.end;
+        }
+      } else if (ui.hasNext && ui.hasNext()) {
+        ui.onNext && ui.onNext();
+      }
+      dom.skipOutro.classList.remove('show');
+    });
 
     const bar = dom.bar;
     const seekAt = e => {
@@ -2788,12 +3420,34 @@ function syncCenter() {
     },
     open(key, ep, prov, type, resumeAt) {
       P.state.key = key; P.state.ep = ep; P.state.prov = prov || null; P.state.type = type || null;
-      P.resumeAt = resumeAt || 0; P.resumed = false; P.retryCount = 0;
+      P.resumed = false; P.retryCount = 0;
+      P._nextCancelled = false;
       buildSpeedMenu();
       showLoad('Resolving stream');
+      /* Always look up saved progress so the resume modal shows even if the
+         caller already passed a resumeAt (the watch view does this).            */
+      let savedProg = null;
+      try { savedProg = Store.getProg(key, String(ep)); } catch (e) { savedProg = null; }
+      if (!resumeAt && savedProg && savedProg.pos >= 20 && (!savedProg.dur || savedProg.pos < savedProg.dur * 0.96)) {
+        resumeAt = savedProg.pos;
+      }
+      const effectiveResumeAt = resumeAt || 0;
+      const showResumeModal = savedProg && savedProg.pos >= 20 && effectiveResumeAt >= 20;
       return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
         if (P.destroyed) return;
-        load(entry, {});
+        if (showResumeModal && dom.resume) {
+          showResumePrompt(effectiveResumeAt, savedProg, () => {
+            P.resumeAt = effectiveResumeAt;
+            load(entry, {});
+          }, () => {
+            P.resumeAt = 0;
+            try { Store.setProg(key, String(ep), 0, savedProg ? savedProg.dur : 0); } catch (e) { }
+            load(entry, {});
+          });
+        } else {
+          P.resumeAt = effectiveResumeAt;
+          load(entry, {});
+        }
         return entry;
       }).catch(e => {
         if (P.destroyed) return;
@@ -2806,16 +3460,46 @@ function syncCenter() {
     switchEpisode(key, ep, prov, type, resumeAt) {
       P.state.key = key; P.state.ep = ep;
       P.state.prov = prov || null; P.state.type = type || null;
-      P.resumeAt = resumeAt || 0;
+      /* CRITICAL FIX: do NOT carry over the previous episode's currentTime.
+         Either use the explicitly-passed resumeAt, or fall back to saved progress
+         from history. If saved progress exists, show the resume modal so the
+         user can choose: continue from saved position or start fresh.            */
       P.resumed = false; P.retryCount = 0;
       P._justSwitched = true;
       P._wasFullscreen = this.isFullscreen();
       dom.err.classList.remove('show');
       dom.end.classList.remove('show');
+      hideNextPill();
+      P._nextCancelled = false;
+      /* Always look up saved progress so we can show the resume modal even
+         when changeEpisode already passed a resumeAt.                          */
+      let savedProg = null;
+      try { savedProg = Store.getProg(key, String(ep)); } catch (e) { savedProg = null; }
+      if (!resumeAt && savedProg && savedProg.pos >= 20 && (!savedProg.dur || savedProg.pos < savedProg.dur * 0.96)) {
+        resumeAt = savedProg.pos;
+      }
+      const effectiveResumeAt = resumeAt || 0;
+      const showResumeModal = savedProg && savedProg.pos >= 20 && effectiveResumeAt >= 20;
       showLoad('Loading next episode');
       return WatchCore.resolve(key, ep, prov, type, { bypass: true }).then(entry => {
         if (P.destroyed) return;
-        load(entry, {});
+        /* If we have saved progress, show the resume modal BEFORE playback starts.
+           The modal blocks autoplay; the user picks Continue / Start fresh.          */
+        if (showResumeModal && dom.resume) {
+          showResumePrompt(effectiveResumeAt, savedProg, () => {
+            /* Continue */
+            P.resumeAt = effectiveResumeAt;
+            load(entry, {});
+          }, () => {
+            /* Start fresh */
+            P.resumeAt = 0;
+            try { Store.setProg(key, String(ep), 0, savedProg ? savedProg.dur : 0); } catch (e) { }
+            load(entry, {});
+          });
+        } else {
+          P.resumeAt = effectiveResumeAt;
+          load(entry, {});
+        }
         return entry;
       }).catch(e => {
         if (!P.destroyed) { if (e && e.noStreams) showEmpty(); else showErr(e && e.message || 'switch'); }
@@ -2872,7 +3556,7 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi v1.0.1 — watch view ================= */
+/* ================= AniKuoshi v1.0.0 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
@@ -2895,6 +3579,7 @@ Views.watch = async function (view, my, key, epRaw) {
     onNext: () => changeEpisode(epByOffset(1)),
     hasNext: () => !!epByOffset(1),
     hasPrev: () => !!epByOffset(-1),
+    peekNext: () => epByOffset(1),
     onServerPick: (prov, type) => {
       Store.setSettings({ prov, type });
       const resumeAt = player.video() ? player.video().currentTime : (player.state.lastDirectTime || 0);
@@ -3016,6 +3701,9 @@ Views.watch = async function (view, my, key, epRaw) {
       { label: 'Sub', list: uniq.filter(s => (s.type || 'sub') === 'sub') },
       { label: 'Dub', list: uniq.filter(s => s.type === 'dub') }
     ];
+    /* Determine the "best" server (the one APIKuoshi's chain resolved as `best`)
+       so we can show a green dot on it. Failed probes get a red dot.            */
+    const bestStream = entry.data && entry.data.best;
     srvBox.replaceChildren();
     for (const g of groups) {
       if (!g.list.length) continue;
@@ -3023,8 +3711,15 @@ Views.watch = async function (view, my, key, epRaw) {
       const row = h('div', { class: 'srvrow-compact' });
       for (const s of g.list) {
         const active = s.provider === entry.stream.provider && (s.type || 'sub') === (entry.stream.type || 'sub');
+        const isBest = bestStream && bestStream.provider === s.provider && (bestStream.type || 'sub') === (s.type || 'sub');
+        const probeFailed = s.probe && s.probe.playable === false;
+        let healthClass = '';
+        if (isBest) healthClass = 'best';
+        else if (probeFailed) healthClass = 'warn';
         const chip = h('button', { class: 'srv-chip-sm' + (g.label === 'Dub' ? ' dub' : '') + (active ? ' on' : '') },
-          h('b', { text: (s.provider || '?').charAt(0).toUpperCase() + (s.provider || '').slice(1) }));
+          h('b', { text: (s.provider || '?').charAt(0).toUpperCase() + (s.provider || '').slice(1) }),
+          h('span', { class: 'srv-health ' + healthClass, title: isBest ? 'Probed best' : probeFailed ? 'Probe failed' : '' })
+        );
         chip.addEventListener('click', () => {
           if (active) return;
           Store.setSettings({ prov: s.provider, type: s.type || 'sub' });
@@ -3045,16 +3740,27 @@ Views.watch = async function (view, my, key, epRaw) {
     if (player.state.mode !== 'direct') return;
     const tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-    if (box.querySelector('.endcard.show') || box.querySelector('.perr.show')) return;
+    if (box.querySelector('.endcard.show') || box.querySelector('.perr.show') || box.querySelector('.resume-modal.show')) return;
     const v = player.video();
     if (!v) return;
     const popsOpen = box.querySelector('.pcpop.open');
+    const shift = e.shiftKey;
+    /* Shift+Enter — skip forward by configured duration (default 85s) */
+    if (e.key === 'Enter' && shift) {
+      e.preventDefault();
+      const dur = Store.settings.skipDuration || 85;
+      seekPub(dur);
+      toast('+' + dur + 's');
+      return;
+    }
     switch (e.key) {
       case ' ': case 'k': e.preventDefault(); if (popsOpen) return; v.paused ? v.play().catch(() => { }) : v.pause(); break;
-      case 'ArrowLeft': e.preventDefault(); seekPub(-5); break;
-      case 'ArrowRight': e.preventDefault(); seekPub(5); break;
+      case 'ArrowLeft':  e.preventDefault(); seekPub(shift ? -60 : -5); break;
+      case 'ArrowRight': e.preventDefault(); seekPub(shift ?  60 :  5); break;
       case 'j': seekPub(-10); break;
       case 'l': seekPub(10); break;
+      case ',': seekPub(-1/30); break;  /* frame step backward */
+      case '.': seekPub( 1/30); break;  /* frame step forward */
       case 'ArrowUp': e.preventDefault(); v.muted = false; v.volume = Math.min(1, v.volume + 0.05); break;
       case 'ArrowDown': e.preventDefault(); v.volume = Math.max(0, v.volume - 0.05); break;
       case 'm': v.muted = !v.muted; break;
@@ -3066,7 +3772,23 @@ Views.watch = async function (view, my, key, epRaw) {
       case 'n': { const n = epByOffset(1); if (n) changeEpisode(n); break; }
       case 'p': { const p = epByOffset(-1); if (p) changeEpisode(p); break; }
       case 'c': player.cycleSubs(); break;
+      case 'Enter': {
+        /* Trigger whichever skip button is currently visible (like YT skip ads) */
+        const skipOutro = box.querySelector('.skip-outro.show');
+        const skipOpen  = box.querySelector('.skipbtn.show:not(.skip-outro)');
+        if (skipOutro) { e.preventDefault(); skipOutro.click(); }
+        else if (skipOpen) { e.preventDefault(); skipOpen.click(); }
+        break;
+      }
       case 'Escape': box.querySelectorAll('.pcpop.open').forEach(p => p.classList.remove('open')); break;
+      default:
+        /* 0-9 jump to N×10% of duration */
+        if (e.key >= '0' && e.key <= '9' && v.duration) {
+          e.preventDefault();
+          v.currentTime = (parseInt(e.key, 10) / 10) * v.duration;
+          toast('Jumped to ' + (parseInt(e.key, 10) * 10) + '%');
+        }
+        break;
     }
   };
   function seekPub(s) {
@@ -3104,9 +3826,10 @@ Views.watch = async function (view, my, key, epRaw) {
   chipEmbed = h('button', { class: 'chip', onclick: () => player.setMode('embed') }, ic('ext', 15), 'Embed');
   modeChips = h('div', { class: 'modegrp' }, chipDirect, chipEmbed);
 
-  const togAutoNext = h('button', { class: 'toggle-chip' + (toggles.autoNext ? ' on' : '') }, ic('autonext', 14), 'Auto-next');
-  const togAutoSkip = h('button', { class: 'toggle-chip' + (toggles.autoSkip ? ' on' : '') }, ic('skip', 14), 'Auto-skip');
-  const togAutoPlay = h('button', { class: 'toggle-chip' + (toggles.autoPlay ? ' on' : '') }, ic('autoplay', 14), 'Auto-play');
+  const togAutoNext = h('button', { class: 'toggle-chip' + (toggles.autoNext ? ' on' : ''), title: 'Auto-next' }, ic('autonext', 14), 'Auto-next');
+  const togAutoSkip = h('button', { class: 'toggle-chip' + (toggles.autoSkip ? ' on' : ''), title: 'Auto-skip Opening' }, ic('skip', 14), 'Auto-skip OP');
+  const togAutoSkipOutro = h('button', { class: 'toggle-chip' + (Store.settings.autoSkipOutro ? ' on' : ''), title: 'Auto-skip Outro' }, ic('skip', 14), 'Auto-skip ED');
+  const togAutoPlay = h('button', { class: 'toggle-chip' + (toggles.autoPlay ? ' on' : ''), title: 'Auto-play' }, ic('autoplay', 14), 'Auto-play');
   togAutoNext.addEventListener('click', () => {
     const v = !Store.getToggles().autoNext;
     Store.setToggle('autoNext', v);
@@ -3116,6 +3839,11 @@ Views.watch = async function (view, my, key, epRaw) {
     const v = !Store.getToggles().autoSkip;
     Store.setToggle('autoSkip', v);
     togAutoSkip.classList.toggle('on', v);
+  });
+  togAutoSkipOutro.addEventListener('click', () => {
+    const v = !Store.settings.autoSkipOutro;
+    Store.setSettings({ autoSkipOutro: v });
+    togAutoSkipOutro.classList.toggle('on', v);
   });
   togAutoPlay.addEventListener('click', () => {
     const v = !Store.getToggles().autoPlay;
@@ -3127,7 +3855,7 @@ Views.watch = async function (view, my, key, epRaw) {
   const btnNextEp = h('button', { class: 'btn btn--line', style: 'min-height:40px;padding:0 14px;font-size:13px', onclick: () => changeEpisode(epByOffset(1)) }, 'Next', ic('next', 16));
 
   srvBox = h('div', { class: 'wctl-row', style: 'display:block' });
-  const toggleRow = h('div', { class: 'watch-toggles' }, togAutoNext, togAutoSkip, togAutoPlay);
+  const toggleRow = h('div', { class: 'watch-toggles' }, togAutoNext, togAutoSkip, togAutoSkipOutro, togAutoPlay);
   epBadgeEl = h('span', { class: 'badge', text: 'EP ' + ep });
   const ctlWrap = h('div', null,
     h('div', { class: 'wctl-row' },
@@ -3144,10 +3872,11 @@ Views.watch = async function (view, my, key, epRaw) {
   const kbdHint = h('div', { class: 'kbd-hint', id: 'kbdHint' },
     ic('kbd', 14),
     h('span', null, h('span', { class: 'kbd', text: 'Space' }), ' play/pause'),
-    h('span', null, h('span', { class: 'kbd', text: '\u2190\u2192' }), ' seek 5s'),
+    h('span', null, h('span', { class: 'kbd', text: 'J/L' }), ' seek 10s'),
+    h('span', null, h('span', { class: 'kbd', text: 'Enter' }), ' skip intro/outro'),
+    h('span', null, h('span', { class: 'kbd', text: '\u21E7+Enter' }), ' skip ' + (Store.settings.skipDuration || 85) + 's'),
     h('span', null, h('span', { class: 'kbd', text: 'F' }), ' fullscreen'),
-    h('span', null, h('span', { class: 'kbd', text: 'N/P' }), ' next/prev (keeps fullscreen)'),
-    h('span', null, h('span', { class: 'kbd', text: 'M' }), ' mute'),
+    h('span', null, h('span', { class: 'kbd', text: 'N/P' }), ' next/prev'),
     h('span', { class: 'dismiss', onclick: () => { localStorage.setItem('anikuoshi:kbdhint','1'); kbdHint.remove(); } }, 'Dismiss'));
   if (!localStorage.getItem('anikuoshi:kbdhint')) main.append(kbdHint);
 
@@ -3335,7 +4064,9 @@ Views.watch = async function (view, my, key, epRaw) {
 /* ================= boot ================= */
 window.addEventListener('offline', () => toast('You are offline \u2014 cached pages still work'));
 window.addEventListener('online', () => toast('Back online'));
+applyTheme();           /* apply saved accent + title-lang before first paint */
 Changelog.init();
+Settings.init();
 if (window.AOS) {
   AOS.init({
     duration: 600,
