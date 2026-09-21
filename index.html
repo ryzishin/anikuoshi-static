@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0c0a07">
-<meta name="description" content="AniKuoshi v1.0.8 — a clean, fast way to watch anime. Search, discover, and stream.">
-<meta name="version" content="1.0.8">
+<meta name="description" content="AniKuoshi v1.0.10 — a clean, fast way to watch anime. Search, discover, and stream.">
+<meta name="version" content="1.0.10">
 <title>AniKuoshi</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230c0a07'/%3E%3Cpath d='M25 19l22 13-22 13z' fill='%23f5a524'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css">
 <style>
-/* ============ AniKuoshi v1.0.8 design system — espresso black / amber ============ */
+/* ============ AniKuoshi v1.0.10 design system — espresso black / amber ============ */
 *,*::before,*::after{box-sizing:border-box}
 :root{
   --bg:#0c0a07; --bg2:#14100b; --bg3:#1c1610; --bg4:#241c13;
@@ -935,7 +935,7 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
   <div class="modal-card">
     <div class="modal-hd">
       <h2 id="clTitle"><svg class="ic"><use href="#i-spark"/></svg> AniKuoshi</h2>
-      <span class="ver-tag">v1.0.8</span>
+      <span class="ver-tag">v1.0.10</span>
       <button class="icbtn x" aria-label="Close" id="clClose"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
     <div class="modal-bd" id="clBody"></div>
@@ -959,10 +959,10 @@ body[data-title-lang="both"] .hcard[data-has-sub="1"] .hcard-sub{display:block}
 <noscript><div style="padding:40px 20px;text-align:center;color:#b0a692">AniKuoshi needs JavaScript to run. Please enable it and reload.</div></noscript>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-/* ================= AniKuoshi v1.0.8 — core ================= */
+/* ================= AniKuoshi v1.0.10 — core ================= */
 'use strict';
 
-const APP_VERSION = '1.0.8';
+const APP_VERSION = '1.0.10';
 const API_BASE = 'https://api-kuoshi.onrender.com';
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
@@ -1800,6 +1800,25 @@ const Changelog = {
     this.modal = $('#changelogModal');
     this.body = $('#clBody');
     this.body.replaceChildren(
+      /* ---------- v1.0.10 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.10', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Progress no longer leaks across episodes on switch.'), ' The ', h('code', null, 'changeEpisode()'), ' function updated the closure variable ', h('code', null, 'ep = newEp'), ' ', h('i', null, 'before'), ' calling ', h('code', null, 'saveProgress()'), '. Because ', h('code', null, 'saveProgress'), ' reads ', h('code', null, 'ep'), ' from that same closure, the OLD episode\'s currentTime (e.g. 5:30) was written into the NEW episode\'s progress slot — then immediately read back as the resume position for the new episode. Result: switch from EP 1 at 5:30 to EP 2 → EP 2 started at 5:30, the resume modal fired with bogus progress, and every next episode inherited the previous episode\'s position. The order is now: save OLD progress → mutate ', h('code', null, 'ep'), ' → read NEW episode\'s saved progress → switch. The write lands in the correct slot.')),
+          h('li', null, h('span', null, h('b', null, 'No resume popup on episode switch.'), ' The "Continue from where you left off?" modal used to fire from ', h('code', null, 'switchEpisode()'), ' whenever the target episode had real progress. In a binge session (N / P / Prev / Next / clicking a card) this was pure friction — you just want the next ep to play. The modal is now suppressed on every in-place switch. If the target episode has saved progress, the player silently resumes from it; otherwise it starts from 0. The modal still fires from ', h('code', null, 'open()'), ' (the initial URL load of ', h('code', null, '/watch/:key/:ep'), '), so the very first visit to an episode you previously watched still prompts — just not when you\'re already in the player and clicking Next.'))
+        )
+      ),
+
+      /* ---------- v1.0.9 patch notes ---------- */
+      h('div', { class: 'cl-section' },
+        h('h3', null, ic('refresh', 14), 'v1.0.9', h('span', { class: 'n', text: 'Patch notes' })),
+        h('ul', { class: 'cl-list' },
+          h('li', null, h('span', null, h('b', null, 'Next-episode preload only fires while playing.'), ' The v1.0.3 preload listened to ', h('code', null, 'timeupdate'), ', which also fires when the video is paused or while you scrub the seekbar. So pausing near the end of an episode (or scrubbing back and forth across the 60s mark) would speculatively fetch the next episode', h('i', null, ' even though you clearly walked away'), '. In a binge session this stacked up: every episode preloaded its successor, the cache expired before you actually pressed Next, and you ended up loading every episode ', h('i', null, 'and'), ' skipping the one you wanted. Now the preload requires ', h('code', null, '!v.paused'), ' AND ', h('code', null, '!P._justSwitched'), ' — it only fires when the current episode is actively playing and we are not mid-switch.')),
+          h('li', null, h('span', null, h('b', null, 'Preload tracks which episode it preloaded.'), ' A new ', h('code', null, 'P._preloadedEpNum'), ' field records the episode number that was preloaded. If the next-episode pointer moves (provider/type changed via ', h('code', null, 'switchServer'), ', mode toggled via ', h('code', null, 'setMode'), ', or you jumped to a non-sequential episode), the stale flag is invalidated and the new ', h('i', null, 'actual'), ' next episode gets a fresh preload. Previously the flag was a boolean only, so a stale preload could mask a now-different next episode and the switch would silently miss the cache.')),
+          h('li', null, h('span', null, h('b', null, 'switchServer / setMode reset the preload.'), ' Switching providers mid-episode changes the cache key (', h('code', null, 'key|ep|prov|type'), '), so any preloaded next-episode for the OLD provider was useless. Same for Direct↔Embed mode switches. Both now reset ', h('code', null, '_preloadedNext'), ' / ', h('code', null, '_preloadedEpNum'), ' so the next 60s window re-preloads with the correct provider/type.'))
+        )
+      ),
+
       /* ---------- v1.0.8 patch notes ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('refresh', 14), 'v1.0.8', h('span', { class: 'n', text: 'Patch notes' })),
@@ -1936,7 +1955,7 @@ const Changelog = {
       /* ---------- Credits ---------- */
       h('div', { class: 'cl-section' },
         h('h3', null, ic('info', 14), 'Credits'),
-        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.8 · RYZISHIN. Streaming metadata and playback provided by <a href="https://api-kuoshi.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
+        h('p', { style: 'font-size:13px;color:var(--dim);line-height:1.55;margin:6px 0 0', html: 'AniKuoshi v1.0.10 · RYZISHIN. Streaming metadata and playback provided by <a href="https://api-kuoshi.onrender.com" target="_blank" rel="noopener" style="color:var(--acc);text-decoration:underline">APIKuoshi</a>.' })
       )
     );
     $('#clClose').addEventListener('click', () => Changelog.close());
@@ -3407,7 +3426,7 @@ Views.details = async function (view, my, key) {
 };
 </script>
 <script>
-/* ================= AniKuoshi v1.0.8 — watch view + player ================= */
+/* ================= AniKuoshi v1.0.10 — watch view + player ================= */
 'use strict';
 
 const WatchCore = {
@@ -3483,6 +3502,16 @@ function createPlayer(box, ui) {
     tracks: [], rate: Store.settings.rate || 1,
     _justSwitched: false,
     _longPressTimer: 0, _longPressActive: false, _savedRate: 1,
+    /* v1.0.9: Next-episode preload state.
+       - _preloadedNext: gates the preload so it only fires once per episode.
+       - _preloadedEpNum: which episode number was preloaded, so the flag can
+         be invalidated if the user changes provider/type mid-episode or if
+         the next-episode pointer shifts (e.g. the episode list re-sorted).
+       Previously the flag was the only signal, so a stale preload could mask
+       a now-different next episode and cause the switch to use a wrong cache
+       entry, or skip the actual next-episode fetch entirely.            */
+    _preloadedNext: false,
+    _preloadedEpNum: null,
     /* Was the player fullscreen when an episode switch / server switch started?
        Used to know whether to re-enter fullscreen after the new stream loads. */
     _wasFullscreen: false,
@@ -3754,18 +3783,47 @@ function syncCenter() {
     /* ---- Auto-next countdown pill (15s before end) ---- */
     updateNextPill();
 
-    /* v1.0.3: Preload the next episode stream ~60s before the current ends. */
-    if (!P._preloadedNext && v.duration && v.currentTime > 1) {
+    /* v1.0.9: Preload the next episode stream ~60s before the current ends.
+
+       ONLY fires when ALL of the following are true:
+         - the flag hasn't already been set for this episode (_preloadedNext)
+         - the video has a duration and has started (>1s played)
+         - the video is ACTIVELY PLAYING (not paused) — previously timeupdate
+           also fires while paused / scrubbing, so pausing near the end would
+           speculatively fetch the next episode even though the user clearly
+           walked away. In a binge session this manifested as the player
+           "loading all episodes" because each pause-and-resume near the end
+           of every episode triggered another speculative fetch.
+         - we are not mid-switch (_justSwitched) so the preload doesn't race
+           with a switchEpisode() that's already loading a new stream.
+         - the episode we'd preload matches the one we already preloaded, if
+           any — if peekNext() shifted (provider/type change, list resort),
+           we invalidate the flag and let the new next episode preload.
+
+       The flag is reset on every open() / switchEpisode() so each new
+       current-episode gets exactly one shot at preloading its successor.    */
+    if (v.duration && v.currentTime > 1 && !v.paused && !P._justSwitched) {
       const remaining = v.duration - v.currentTime;
       if (remaining <= 60 && remaining > 2) {
         if (ui.hasNext && ui.hasNext() && ui.peekNext) {
           const nextEp = ui.peekNext();
           if (nextEp && nextEp.number != null) {
-            P._preloadedNext = true;
-            WatchCore.resolve(
-              P.state.key, String(nextEp.number),
-              Store.settings.prov || null, Store.settings.type || null, {}
-            ).then(() => { /* preloaded */ }).catch(() => { P._preloadedNext = false; });
+            const nextNum = String(nextEp.number);
+            /* v1.0.9: If the next-episode pointer has moved (e.g. provider/
+               type changed, list reordered, or user jumped to a different ep),
+               invalidate the stale preload flag so the new next can preload. */
+            if (P._preloadedNext && P._preloadedEpNum !== nextNum) {
+              P._preloadedNext = false;
+              P._preloadedEpNum = null;
+            }
+            if (!P._preloadedNext) {
+              P._preloadedNext = true;
+              P._preloadedEpNum = nextNum;
+              WatchCore.resolve(
+                P.state.key, nextNum,
+                Store.settings.prov || null, Store.settings.type || null, {}
+              ).then(() => { /* preloaded */ }).catch(() => { P._preloadedNext = false; P._preloadedEpNum = null; });
+            }
           }
         }
       }
@@ -4558,6 +4616,7 @@ function syncCenter() {
       P.resumed = false; P.retryCount = 0;
       P._nextCancelled = false;
       P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
+      P._preloadedEpNum = null;  /* v1.0.9: reset preloaded-episode tracker */
       /* v1.0.5: Bump switch generation + dismiss any stale resume modal. */
       const myGen = ++P._switchGen;
       if (dom.resume) dom.resume.classList.remove('show');
@@ -4615,6 +4674,7 @@ function syncCenter() {
       P._justSwitched = true;
       P._wasFullscreen = this.isFullscreen();
       P._preloadedNext = false;  /* v1.0.3: reset preload flag for new episode */
+      P._preloadedEpNum = null;  /* v1.0.9: reset preloaded-episode tracker */
       /* v1.0.5: Bump switch generation + dismiss any stale resume modal. */
       const myGen = ++P._switchGen;
       if (dom.resume) dom.resume.classList.remove('show');
@@ -4631,7 +4691,16 @@ function syncCenter() {
         resumeAt = savedProg.pos;
       }
       const effectiveResumeAt = resumeAt || 0;
-      const showResumeModal = hasRealProgress && effectiveResumeAt >= 20;
+      /* v1.0.10: NEVER show the resume modal during an in-place episode
+         switch (Next / Prev / N / P / clicking a card). The modal was
+         originally added so that if you had genuine progress in the target
+         episode, you'd get to choose Continue vs Start fresh. But in a
+         binge session the popup is friction — you just want the next ep to
+         play. If there's saved progress, we silently resume from it; if not,
+         we start from 0. The modal still fires from open() (initial URL
+         navigation to /watch/:key/:ep) so the very first load of an episode
+         you previously watched still prompts.                                          */
+      const showResumeModal = false;
       /* v1.0.8: Always show the loader immediately, even if the stream was
          preloaded. The loader stays visible until the video fires 'playing'
          or the iframe loads. This prevents the "black screen" flash between
@@ -4676,6 +4745,12 @@ function syncCenter() {
       P.retryCount = 0;
       P._justSwitched = true;
       P._wasFullscreen = this.isFullscreen();
+      /* v1.0.9: Provider/type changed → the preloaded next episode was for the
+         OLD provider/type (different cache key), so invalidate the preload
+         flag. The new next-episode preload will re-fire when playback resumes
+         and we re-enter the 60s window with the new provider.              */
+      P._preloadedNext = false;
+      P._preloadedEpNum = null;
       /* v1.0.8: Bump switch generation so stale resume modals don't fire. */
       const myGen = ++P._switchGen;
       if (dom.resume) dom.resume.classList.remove('show');
@@ -4692,6 +4767,12 @@ function syncCenter() {
     setMode(mode) {
       if (P.state.mode === mode) return;
       P._justSwitched = true;
+      /* v1.0.9: Mode switch (Direct ↔ Embed) — invalidate the preload flag
+         because the cache key is the same but the playback path is different
+         (HLS preload is useless if the user is about to switch to Embed, and
+         vice versa). The preload will re-fire on the next 60s window. */
+      P._preloadedNext = false;
+      P._preloadedEpNum = null;
       /* v1.0.8: Bump switch generation so stale resume modals don't fire. */
       const myGen = ++P._switchGen;
       if (dom.resume) dom.resume.classList.remove('show');
@@ -4735,7 +4816,7 @@ function syncCenter() {
 }
 </script>
 <script>
-/* ================= AniKuoshi v1.0.8 — watch view ================= */
+/* ================= AniKuoshi v1.0.10 — watch view ================= */
 'use strict';
 
 Views.watch = async function (view, my, key, epRaw) {
@@ -4831,15 +4912,25 @@ Views.watch = async function (view, my, key, epRaw) {
     const newEp = String(target.number);
     if (newEp === ep) return;
     const oldEp = ep;
-    ep = newEp;
-    /* Update URL silently so popstate doesn't trigger a full re-render */
-    const newPath = '/watch/' + routeKey(uiState.anime || { slug: key, key: key }) + '/' + newEp;
-    Router.replacePathSilent(newPath);
-    /* Save current progress before switching */
+    /* v1.0.10: Save the OLD episode's progress BEFORE updating `ep` to the
+       new value. Previously the order was:
+         ep = newEp;
+         saveProgress(v.currentTime, v.duration, true);   // BUG
+       Because saveProgress() reads `ep` from this closure, it wrote the OLD
+       episode's currentTime into the NEW episode's progress slot, then
+       immediately read it back as the resume position for the new episode.
+       Result: EP 1 at 5:30 → switch to EP 2 → EP 2 starts at 5:30 AND the
+       resume modal fires with bogus progress. This is the "progress state
+       passing to other playback" bug. Saving first, then mutating `ep`,
+       makes the write land in the correct slot.                                       */
     try {
       const v = player.video();
       if (v && v.currentTime) saveProgress(v.currentTime, v.duration || 0, true);
     } catch (e) { }
+    ep = newEp;
+    /* Update URL silently so popstate doesn't trigger a full re-render */
+    const newPath = '/watch/' + routeKey(uiState.anime || { slug: key, key: key }) + '/' + newEp;
+    Router.replacePathSilent(newPath);
     /* Reload stream in same player (keeps fullscreen) */
     const prog = Store.getProg(key, newEp);
     const resumeAt = prog && prog.pos >= 20 && (!prog.dur || prog.pos < prog.dur * 0.96) ? prog.pos : 0;
